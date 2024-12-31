@@ -2,6 +2,7 @@ package semver
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -13,6 +14,9 @@ type Prerelease struct {
 
 // A prereleaseIdentifier is a single pre-release identifier separated by dots.
 type prereleaseIdentifier interface {
+	// Equal tells if the given prereleaseIdentifier is equal to this one.
+	Equal(o prereleaseIdentifier) bool
+
 	// Len returns the length of the pre-release identifier in characters.
 	Len() int
 
@@ -33,6 +37,12 @@ type numericIdentifier struct {
 
 type alphanumericIdentifier struct {
 	v string
+}
+
+func (p Prerelease) Equal(o Prerelease) bool {
+	return slices.EqualFunc(p.identifiers, o.identifiers, func(a, b prereleaseIdentifier) bool {
+		return a.Equal(b)
+	})
 }
 
 func (p Prerelease) String() string {
@@ -63,6 +73,18 @@ func (p Prerelease) String() string {
 	return s[:len(s)-1]
 }
 
+func (i numericIdentifier) Equal(o prereleaseIdentifier) bool {
+	other, ok := o.(numericIdentifier)
+	if !ok {
+		return false
+	}
+
+	v1, _ := i.Value()
+	v2, _ := other.Value()
+
+	return v1 == v2
+}
+
 func (i numericIdentifier) Len() int {
 	return countDigits(i.v)
 }
@@ -73,6 +95,18 @@ func (i numericIdentifier) String() string {
 
 func (i numericIdentifier) Value() (int, string) {
 	return i.v, ""
+}
+
+func (i alphanumericIdentifier) Equal(o prereleaseIdentifier) bool {
+	other, ok := o.(alphanumericIdentifier)
+	if !ok {
+		return false
+	}
+
+	_, v1 := i.Value()
+	_, v2 := other.Value()
+
+	return v1 == v2
 }
 
 func (i alphanumericIdentifier) Len() int {

@@ -28,7 +28,11 @@ type Version struct {
 	rawStr     string
 }
 
-func (v Version) String() string {
+func (v *Version) Equal(o *Version) bool {
+	return v.Major == o.Major && v.Minor == o.Minor && v.Patch == o.Patch && v.Prerelease.Equal(o.Prerelease) && v.Build.equal(o.Build)
+}
+
+func (v *Version) String() string {
 	var sb strings.Builder
 
 	sb.WriteString(strconv.Itoa(v.Major))
@@ -107,6 +111,10 @@ func ParsePrefix(ver string, prefixes ...string) (*Version, error) {
 	}
 
 	return v, nil
+}
+
+func (i buildIdentifiers) equal(o buildIdentifiers) bool {
+	return slices.Equal(i, o)
 }
 
 func parse(ver string, prefixes ...string) (*Version, error) {
