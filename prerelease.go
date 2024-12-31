@@ -1,11 +1,14 @@
 package semver
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strconv"
 	"strings"
 )
+
+var errInvalidPrereleaseIndent = errors.New("invalid pre-release identifier")
 
 // A Prerelease holds the pre-release identifiers of a version.
 type Prerelease struct {
@@ -119,4 +122,21 @@ func (i alphanumericIdentifier) String() string {
 
 func (i alphanumericIdentifier) Value() (int, string) {
 	return -1, i.v
+}
+
+func NewPrerelease(a ...any) (Prerelease, error) {
+	identifiers := make([]prereleaseIdentifier, 0)
+
+	for _, v := range a {
+		switch u := v.(type) {
+		case int:
+			identifiers = append(identifiers, numericIdentifier{u})
+		case string:
+			identifiers = append(identifiers, alphanumericIdentifier{u})
+		default:
+			return Prerelease{}, fmt.Errorf("%w: %v", errInvalidPrereleaseIndent, v)
+		}
+	}
+
+	return Prerelease{identifiers}, nil
 }

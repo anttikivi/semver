@@ -15,7 +15,7 @@ import (
 // TODO: Maybe implement different errors for the different cases.
 var errInvalidVersion = errors.New("invalid semantic version")
 
-type buildIdentifiers []string
+type BuildIdentifiers []string
 
 // A Version is a parsed instance of a version number that adheres to the
 // semantic versioning 2.0.0.
@@ -24,12 +24,16 @@ type Version struct {
 	Minor      int
 	Patch      int
 	Prerelease Prerelease
-	Build      buildIdentifiers
+	Build      BuildIdentifiers
 	rawStr     string
 }
 
 func (v *Version) Equal(o *Version) bool {
-	return v.Major == o.Major && v.Minor == o.Minor && v.Patch == o.Patch && v.Prerelease.Equal(o.Prerelease) && v.Build.equal(o.Build)
+	if o == nil {
+		return v == nil
+	}
+
+	return v.Major == o.Major && v.Minor == o.Minor && v.Patch == o.Patch && v.Prerelease.Equal(o.Prerelease) && v.Build.equal(o.Build) //nolint:lll // we can have a long line here
 }
 
 func (v *Version) String() string {
@@ -95,6 +99,13 @@ func MustParsePrefix(ver string, prefixes ...string) *Version {
 	return v
 }
 
+func NewBuildIdentifiers(s ...string) BuildIdentifiers {
+	b := make(BuildIdentifiers, 0, len(s))
+	b = append(b, s...)
+
+	return b
+}
+
 func Parse(ver string) (*Version, error) {
 	v, err := parse(ver)
 	if err != nil {
@@ -113,7 +124,7 @@ func ParsePrefix(ver string, prefixes ...string) (*Version, error) {
 	return v, nil
 }
 
-func (i buildIdentifiers) equal(o buildIdentifiers) bool {
+func (i BuildIdentifiers) equal(o BuildIdentifiers) bool {
 	return slices.Equal(i, o)
 }
 
@@ -181,7 +192,7 @@ func parse(ver string, prefixes ...string) (*Version, error) {
 		}
 	}
 
-	var build buildIdentifiers
+	var build BuildIdentifiers
 
 	if pos < len(ver) && ver[pos] == '+' {
 		// Move past the '+'.
