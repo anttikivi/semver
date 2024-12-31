@@ -1,0 +1,106 @@
+name: Go Checks
+
+on:
+  push:
+    paths:
+      - "**.go"
+      - go.mod
+      - go.sum
+  pull_request:
+    paths:
+      - "**.go"
+      - go.mod
+      - go.sum
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone the source code
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up the Go toolchain
+        uses: actions/setup-go@v5.2.0
+        with:
+          go-version-file: go.mod
+
+      - name: Verify and download dependencies
+        run: |
+          go mod verify
+          go mod download
+
+      - name: Run the linter
+        uses: golangci/golangci-lint-action@v6.1.1
+        with:
+          version: v1.62.2
+
+      - name: Run the checks
+        run: |
+          STATUS=0
+          assert-nothing-changed() {
+            local diff
+            "$@" >/dev/null || return 1
+            if ! diff="$(git diff -U1 --color --exit-code)"; then
+              printf '\e[31mError: running `\e[1m%s\e[22m` results in modifications that you must check into version control:\e[0m\n%s\n\n' "$*" "$diff" >&2
+              git checkout -- .
+              STATUS=1
+            fi
+          }
+
+          # assert-nothing-changed go fmt ./...
+          # assert-nothing-changed go mod tidy
+          assert-nothing-changed make fmt
+
+          exit $STATUS
+
+  unit-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Fetch the source code
+        uses: actions/checkout@v4.2.2
+
+      - name: Install the Go toolchain
+        uses: actions/setup-go@v5.2.0
+        with:
+          go-version-file: go.mod
+
+      - name: Verify and download dependencies
+        run: |
+          go mod verify
+          go mod download
+
+      - name: Run the unit tests
+        run: go test -v ./...
+
+  race-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Fetch the source code
+        uses: actions/checkout@v4.2.2
+
+      - name: Install the Go toolchain
+        uses: actions/setup-go@v5.2.0
+        with:
+          go-version-file: go.mod
+
+      - name: Verify and download dependencies
+        run: |
+          go mod verify
+          go mod download
+
+      - name: Run the unit tests
+        run: go test -race ./...
