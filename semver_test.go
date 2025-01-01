@@ -1,6 +1,7 @@
 package semver_test
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/anttikivi/go-semver"
@@ -917,6 +918,23 @@ func TestVersionStringWithPrefix(t *testing.T) { //nolint:funlen // lot's of tes
 	}
 }
 
+func BenchmarkParse(b *testing.B) {
+	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
+
+	for range b.N {
+		_, _ = semver.Parse(test)
+	}
+}
+
+// To test whether using regexes is faster, looks like its not.
+func BenchmarkParseRegex(b *testing.B) {
+	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
+
+	for range b.N {
+		_ = parseRegex(test)
+	}
+}
+
 func newPrerelease(a ...any) semver.Prerelease {
 	p, err := semver.NewPrerelease(a...)
 	if err != nil {
@@ -934,4 +952,45 @@ func newVersion(major, minor, patch int, pr semver.Prerelease, b ...string) *sem
 		Prerelease: pr,
 		Build:      semver.NewBuildIdentifiers(b...),
 	}
+}
+
+type regexVer struct {
+	major         int
+	minor         int
+	patch         int
+	prerelease    string
+	buildmetadata string
+}
+
+func parseRegex(v string) *regexVer {
+	match := versionRegex.FindStringSubmatch(v)
+	if match == nil {
+		// fmt.Println("No match found!")
+		return nil
+	}
+
+	names := versionRegex.SubexpNames()
+
+	result := make(map[string]string)
+	for i, name := range names {
+		if i != 0 && name != "" { // Skip the full match and unnamed groups
+			result[name] = match[i]
+		}
+	}
+
+	major, _ := strconv.Atoi(result["major"])
+	minor, _ := strconv.Atoi(result["minor"])
+	patch, _ := strconv.Atoi(result["patch"])
+
+	prerelease := ""
+	if p, ok := result["prerelease"]; ok {
+		prerelease = p
+	}
+
+	buildmetadata := ""
+	if b, ok := result["buildmetadata"]; ok {
+		buildmetadata = b
+	}
+
+	return &regexVer{major, minor, patch, prerelease, buildmetadata}
 }
