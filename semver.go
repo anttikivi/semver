@@ -53,27 +53,6 @@ func (v *Version) String() string {
 	return sb.String()
 }
 
-// IsValid reports whether s is a valid semantic version string.
-// The version may have a 'v' prefix.
-func IsValid(s string) bool {
-	if _, err := parse(s); err != nil {
-		return false
-	}
-
-	return true
-}
-
-// IsValidPrefix reports whether s is a valid semantic version string.
-// It allows the version to have either one of the given prefixes or a 'v'
-// prefix.
-func IsValidPrefix(s string, prefixes ...string) bool {
-	if _, err := parse(s, prefixes...); err != nil {
-		return false
-	}
-
-	return true
-}
-
 // MustParse parses the given string into a Version and panic if it encounters
 // an error.
 // The version may have a 'v' prefix.

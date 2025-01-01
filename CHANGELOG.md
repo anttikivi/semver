@@ -8,6 +8,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- New implementation for functions `IsValid` and `IsValidPrefix` that doesn’t parse the version but just checks for the validity. This drastically speeds up checking whether a string is a valid version.
+
 ## [0.1.0] - 2024-12-31
 
 - Initial release of the project.
