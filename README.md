@@ -2,7 +2,7 @@
 
 This is my parser for version strings that adhere to [semantic versioning](https://semver.org) in Go. It should implement the semantic versioning spec and be simple to use.
 
-There are quite a few other parsers in Go; I implemented my own because I wanted to.
+There are quite a few other parsers in Go; I implemented my own because I wanted to. Some of the existing implementations also use regular expressions to parse the version and, according to my benchmarks in this repository, this implementation without regexps is a lot faster.
 
 ## Install
 
