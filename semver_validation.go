@@ -18,7 +18,7 @@ func IsValidPrefix(ver string, p ...string) bool {
 	return isValid(ver, p...)
 }
 
-func isValid(ver string, prefixes ...string) bool {
+func isValid(ver string, prefixes ...string) bool { //nolint:cyclop,funlen,gocognit,gocyclo // not really too complex
 	if ver == "" {
 		return false
 	}
@@ -38,17 +38,17 @@ func isValid(ver string, prefixes ...string) bool {
 		}
 	}
 
-	len := len(ver)
+	length := len(ver)
 
 	// Check the major and minor number.
 	// Both of them should start at the next position and end in a dot so we can
 	// just repeat this loop twice.
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		start := pos
 		zero := ver[pos] == '0'
 
 		// Check that every number before the next dot is a digit.
-		for ; pos < len && ver[pos] != '.'; pos++ {
+		for ; pos < length && ver[pos] != '.'; pos++ {
 			if ver[pos] < '0' || ver[pos] > '9' {
 				return false
 			}
@@ -59,7 +59,7 @@ func isValid(ver string, prefixes ...string) bool {
 		}
 
 		// We cannot be at the end yet.
-		if pos >= len {
+		if pos >= length {
 			return false
 		}
 
@@ -76,7 +76,7 @@ func isValid(ver string, prefixes ...string) bool {
 	zero := ver[pos] == '0'
 
 	// Check that every number before the next dot is a digit.
-	for ; pos < len && ver[pos] != '-' && ver[pos] != '+'; pos++ {
+	for ; pos < length && ver[pos] != '-' && ver[pos] != '+'; pos++ {
 		if ver[pos] < '0' || ver[pos] > '9' {
 			return false
 		}
@@ -88,12 +88,12 @@ func isValid(ver string, prefixes ...string) bool {
 
 	// If the major, minor, and patch were checked successfully and we are at
 	// the end, the version is valid.
-	if pos >= len {
+	if pos >= length {
 		return true
 	}
 
 	// Check the pre-release identifiers.
-	if ver[pos] == '-' {
+	if ver[pos] == '-' { //nolint:nestif // not too complex
 		// Skip the hyphen.
 		pos++
 
@@ -101,7 +101,7 @@ func isValid(ver string, prefixes ...string) bool {
 		zero = false
 		currentLen := 0
 
-		for ; pos < len && ver[pos] != '+'; pos++ {
+		for ; pos < length && ver[pos] != '+'; pos++ {
 			b := ver[pos]
 			// If the character is a dot, start a new identifier.
 			if b == '.' {
@@ -110,12 +110,13 @@ func isValid(ver string, prefixes ...string) bool {
 				if zero && num && currentLen > 1 {
 					return false
 				}
+
 				num = true
 				zero = false
 				currentLen = 0
 				pos++
 				// Empty identifier is invalid.
-				if b = ver[pos]; b == '+' || pos >= len {
+				if b = ver[pos]; b == '+' || pos >= length {
 					return false
 				}
 			}
@@ -149,13 +150,13 @@ func isValid(ver string, prefixes ...string) bool {
 		}
 	}
 
-	if pos >= len {
+	if pos >= length {
 		return true
 	}
 
 	if ver[pos] == '+' {
 		pos++
-		for ; pos < len; pos++ {
+		for ; pos < length; pos++ {
 			b := ver[pos]
 			if ('A' > b || b > 'Z') && ('a' > b || b > 'z') && ('0' > b || b > '9') && b != '-' && b != '.' {
 				return false
