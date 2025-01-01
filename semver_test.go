@@ -71,6 +71,8 @@ var (
 		{"1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
 		{"1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{"1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
+		{"1.2.3-0123", nil, true},
 
 		{
 			"v0.1.0-alpha.24+sha.19031c2.darwin.amd64",
@@ -128,6 +130,8 @@ var (
 		{"v1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"v1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
 		{"v1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{"v1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
+		{"v1.2.3-0123", nil, true},
 
 		{"semver0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
 		{"semver0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
@@ -165,6 +169,8 @@ var (
 		{"semver1.2.3+meta", nil, true},
 		{"semver1.2.3+meta-pre", nil, true},
 		{"semver1.2.3+meta-pre.sha.256a", nil, true},
+		{"semver1.2.3-012a", nil, true},
+		{"semver1.2.3-0123", nil, true},
 
 		{"sem0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
 		{"sem0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
@@ -202,6 +208,8 @@ var (
 		{"sem1.2.3+meta", nil, true},
 		{"sem1.2.3+meta-pre", nil, true},
 		{"sem1.2.3+meta-pre.sha.256a", nil, true},
+		{"sem1.2.3-012a", nil, true},
+		{"sem1.2.3-0123", nil, true},
 
 		{"se0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
 		{"se0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
@@ -239,6 +247,8 @@ var (
 		{"se1.2.3+meta", nil, true},
 		{"se1.2.3+meta-pre", nil, true},
 		{"se1.2.3+meta-pre.sha.256a", nil, true},
+		{"se1.2.3-012a", nil, true},
+		{"se1.2.3-0123", nil, true},
 	}
 	prefixTests = []struct { //nolint:gochecknoglobals // test cases are shared between multiple tests
 		v       string
@@ -302,6 +312,8 @@ var (
 		{"1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
 		{"1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{"1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
+		{"1.2.3-0123", nil, true},
 
 		{
 			"v0.1.0-alpha.24+sha.19031c2.darwin.amd64",
@@ -359,6 +371,8 @@ var (
 		{"v1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"v1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
 		{"v1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{"v1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
+		{"v1.2.3-0123", nil, true},
 
 		{
 			"semver0.1.0-alpha.24+sha.19031c2.darwin.amd64",
@@ -416,6 +430,8 @@ var (
 		{"semver1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"semver1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
 		{"semver1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{"semver1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
+		{"semver1.2.3-0123", nil, true},
 
 		{"sem0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
 		{"sem0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
@@ -453,6 +469,8 @@ var (
 		{"sem1.2.3+meta", nil, true},
 		{"sem1.2.3+meta-pre", nil, true},
 		{"sem1.2.3+meta-pre.sha.256a", nil, true},
+		{"sem1.2.3-012a", nil, true},
+		{"sem1.2.3-0123", nil, true},
 
 		{
 			"se0.1.0-alpha.24+sha.19031c2.darwin.amd64",
@@ -510,6 +528,8 @@ var (
 		{"se1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"se1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
 		{"se1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{"se1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
+		{"se1.2.3-0123", nil, true},
 	}
 )
 
@@ -557,6 +577,8 @@ func TestIsValid(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"1.2.3+meta", true},
 		{"1.2.3+meta-pre", true},
 		{"1.2.3+meta-pre.sha.256a", true},
+		{"1.2.3-012a", true},
+		{"1.2.3-0123", false},
 
 		{"v", false},
 		{"vbad", false},
@@ -591,6 +613,8 @@ func TestIsValid(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"v1.2.3+meta", true},
 		{"v1.2.3+meta-pre", true},
 		{"v1.2.3+meta-pre.sha.256a", true},
+		{"v1.2.3-012a", true},
+		{"v1.2.3-0123", false},
 
 		{"semver", false},
 		{"semverbad", false},
@@ -625,6 +649,8 @@ func TestIsValid(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"semver1.2.3+meta", false},
 		{"semver1.2.3+meta-pre", false},
 		{"semver1.2.3+meta-pre.sha.256a", false},
+		{"semver1.2.3-012a", false},
+		{"semver1.2.3-0123", false},
 
 		{"sem", false},
 		{"sembad", false},
@@ -659,6 +685,8 @@ func TestIsValid(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"sem1.2.3+meta", false},
 		{"sem1.2.3+meta-pre", false},
 		{"sem1.2.3+meta-pre.sha.256a", false},
+		{"sem1.2.3-012a", false},
+		{"sem1.2.3-0123", false},
 
 		{"se", false},
 		{"sebad", false},
@@ -693,6 +721,8 @@ func TestIsValid(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"se1.2.3+meta", false},
 		{"se1.2.3+meta-pre", false},
 		{"se1.2.3+meta-pre.sha.256a", false},
+		{"se1.2.3-012a", false},
+		{"se1.2.3-0123", false},
 	}
 	for _, tt := range tests {
 		name := tt.v
@@ -754,6 +784,8 @@ func TestIsValidPrefix(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"1.2.3+meta", true},
 		{"1.2.3+meta-pre", true},
 		{"1.2.3+meta-pre.sha.256a", true},
+		{"1.2.3-012a", true},
+		{"1.2.3-0123", false},
 
 		{"vbad", false},
 		{"v1-alpha.beta.gamma", false},
@@ -787,6 +819,8 @@ func TestIsValidPrefix(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"v1.2.3+meta", true},
 		{"v1.2.3+meta-pre", true},
 		{"v1.2.3+meta-pre.sha.256a", true},
+		{"v1.2.3-012a", true},
+		{"v1.2.3-0123", false},
 
 		{"semverbad", false},
 		{"semver1-alpha.beta.gamma", false},
@@ -820,6 +854,8 @@ func TestIsValidPrefix(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"semver1.2.3+meta", true},
 		{"semver1.2.3+meta-pre", true},
 		{"semver1.2.3+meta-pre.sha.256a", true},
+		{"semver1.2.3-012a", true},
+		{"semver1.2.3-0123", false},
 
 		{"sembad", false},
 		{"sem1-alpha.beta.gamma", false},
@@ -853,6 +889,8 @@ func TestIsValidPrefix(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"sem1.2.3+meta", false},
 		{"sem1.2.3+meta-pre", false},
 		{"sem1.2.3+meta-pre.sha.256a", false},
+		{"sem1.2.3-012a", false},
+		{"sem1.2.3-0123", false},
 
 		{"sebad", false},
 		{"se1-alpha.beta.gamma", false},
@@ -886,6 +924,8 @@ func TestIsValidPrefix(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"se1.2.3+meta", true},
 		{"se1.2.3+meta-pre", true},
 		{"se1.2.3+meta-pre.sha.256a", true},
+		{"se1.2.3-012a", true},
+		{"se1.2.3-0123", false},
 	}
 	for _, tt := range tests {
 		name := tt.v
@@ -1053,6 +1093,8 @@ func TestVersionString(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"1.2.3+meta", "1.2.3"},
 		{"1.2.3+meta-pre", "1.2.3"},
 		{"1.2.3+meta-pre.sha.256a", "1.2.3"},
+		{"1.2.3-012a", "1.2.3-012a"},
+		{"1.2.3-0123", ""},
 
 		{"v", ""},
 		{"vbad", ""},
@@ -1087,6 +1129,8 @@ func TestVersionString(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"v1.2.3+meta", "1.2.3"},
 		{"v1.2.3+meta-pre", "1.2.3"},
 		{"v1.2.3+meta-pre.sha.256a", "1.2.3"},
+		{"v1.2.3-012a", "1.2.3-012a"},
+		{"v1.2.3-0123", ""},
 
 		{"semverbad", ""},
 		{"semver1-alpha.beta.gamma", ""},
@@ -1120,6 +1164,8 @@ func TestVersionString(t *testing.T) { //nolint:funlen // lot's of test cases
 		{"semver1.2.3+meta", ""},
 		{"semver1.2.3+meta-pre", ""},
 		{"semver1.2.3+meta-pre.sha.256a", ""},
+		{"semver1.2.3-012a", ""},
+		{"semver1.2.3-0123", ""},
 	}
 	for _, tt := range tests {
 		name := tt.v
@@ -1186,6 +1232,8 @@ func TestVersionStringWithPrefix(t *testing.T) { //nolint:funlen // lot's of tes
 		{"1.2.3+meta", "1.2.3"},
 		{"1.2.3+meta-pre", "1.2.3"},
 		{"1.2.3+meta-pre.sha.256a", "1.2.3"},
+		{"1.2.3-012a", "1.2.3-012a"},
+		{"1.2.3-0123", ""},
 
 		{"v", ""},
 		{"vbad", ""},
@@ -1220,6 +1268,8 @@ func TestVersionStringWithPrefix(t *testing.T) { //nolint:funlen // lot's of tes
 		{"v1.2.3+meta", "1.2.3"},
 		{"v1.2.3+meta-pre", "1.2.3"},
 		{"v1.2.3+meta-pre.sha.256a", "1.2.3"},
+		{"v1.2.3-012a", "1.2.3-012a"},
+		{"v1.2.3-0123", ""},
 
 		{"semverbad", ""},
 		{"semver1-alpha.beta.gamma", ""},
@@ -1253,6 +1303,8 @@ func TestVersionStringWithPrefix(t *testing.T) { //nolint:funlen // lot's of tes
 		{"semver1.2.3+meta", "1.2.3"},
 		{"semver1.2.3+meta-pre", "1.2.3"},
 		{"semver1.2.3+meta-pre.sha.256a", "1.2.3"},
+		{"semver1.2.3-012a", "1.2.3-012a"},
+		{"semver1.2.3-0123", ""},
 	}
 	for _, tt := range tests {
 		name := tt.v
