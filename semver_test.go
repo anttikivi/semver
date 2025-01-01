@@ -643,7 +643,7 @@ func TestParsePrefix(t *testing.T) {
 func TestVersionString(t *testing.T) { //nolint:funlen // lot's of test cases
 	t.Parallel()
 
-	tests := []struct { //nolint:dupl // tests differ between tests
+	tests := []struct {
 		v    string
 		want string
 	}{
@@ -782,7 +782,7 @@ func TestVersionString(t *testing.T) { //nolint:funlen // lot's of test cases
 func TestVersionStringWithPrefix(t *testing.T) { //nolint:funlen // lot's of test cases
 	t.Parallel()
 
-	tests := []struct { //nolint:dupl // tests differ between tests
+	tests := []struct {
 		v    string
 		want string
 	}{
@@ -919,7 +919,7 @@ func TestVersionStringWithPrefix(t *testing.T) { //nolint:funlen // lot's of tes
 }
 
 func BenchmarkParse(b *testing.B) {
-	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
+	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64" //nolint:goconst // test case
 
 	for range b.N {
 		_, _ = semver.Parse(test)
@@ -954,7 +954,7 @@ func newVersion(major, minor, patch int, pr semver.Prerelease, b ...string) *sem
 	}
 }
 
-type regexVer struct {
+type regexVer struct { //nolint:decorder // tests
 	major         int
 	minor         int
 	patch         int
@@ -972,8 +972,9 @@ func parseRegex(v string) *regexVer {
 	names := versionRegex.SubexpNames()
 
 	result := make(map[string]string)
+
 	for i, name := range names {
-		if i != 0 && name != "" { // Skip the full match and unnamed groups
+		if i != 0 && name != "" {
 			result[name] = match[i]
 		}
 	}
