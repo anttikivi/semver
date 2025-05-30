@@ -1,8 +1,6 @@
 package semver
 
-import (
-	"testing"
-)
+import "testing"
 
 func BenchmarkIsValidByParse(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"

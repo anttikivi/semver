@@ -83,6 +83,12 @@ var (
 		},
 		{"1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"1.2.3-0123", nil, true},
+		{"01.2.3", nil, true},
+		{"1.02.3", nil, true},
+		{"1.2.03", nil, true},
+		{"01", nil, true},
+		{"1.02", nil, true},
+		{"01.02", nil, true},
 
 		{
 			"v0.1.0-alpha.24+sha.19031c2.darwin.amd64",
@@ -146,6 +152,12 @@ var (
 		},
 		{"v1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"v1.2.3-0123", nil, true},
+		{"v01.2.3", nil, true},
+		{"v1.02.3", nil, true},
+		{"v1.2.03", nil, true},
+		{"v01", nil, true},
+		{"v1.02", nil, true},
+		{"v01.02", nil, true},
 
 		{"semver0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
 		{"semver0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
@@ -185,6 +197,12 @@ var (
 		{"semver1.2.3+meta-pre.sha.256a", nil, true},
 		{"semver1.2.3-012a", nil, true},
 		{"semver1.2.3-0123", nil, true},
+		{"semver01.2.3", nil, true},
+		{"semver1.02.3", nil, true},
+		{"semver1.2.03", nil, true},
+		{"semver01", nil, true},
+		{"semver1.02", nil, true},
+		{"semver01.02", nil, true},
 
 		{"sem0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
 		{"sem0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
@@ -224,6 +242,12 @@ var (
 		{"sem1.2.3+meta-pre.sha.256a", nil, true},
 		{"sem1.2.3-012a", nil, true},
 		{"sem1.2.3-0123", nil, true},
+		{"sem01.2.3", nil, true},
+		{"sem1.02.3", nil, true},
+		{"sem1.2.03", nil, true},
+		{"sem01", nil, true},
+		{"sem1.02", nil, true},
+		{"sem01.02", nil, true},
 
 		{"se0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
 		{"se0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
@@ -263,6 +287,12 @@ var (
 		{"se1.2.3+meta-pre.sha.256a", nil, true},
 		{"se1.2.3-012a", nil, true},
 		{"se1.2.3-0123", nil, true},
+		{"se01.2.3", nil, true},
+		{"se1.02.3", nil, true},
+		{"se1.2.03", nil, true},
+		{"se01", nil, true},
+		{"se1.02", nil, true},
+		{"se01.02", nil, true},
 	}
 	prefixTests = []struct {
 		v       string
@@ -332,6 +362,12 @@ var (
 		},
 		{"1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"1.2.3-0123", nil, true},
+		{"01.2.3", nil, true},
+		{"1.02.3", nil, true},
+		{"1.2.03", nil, true},
+		{"01", nil, true},
+		{"1.02", nil, true},
+		{"01.02", nil, true},
 
 		{
 			"v0.1.0-alpha.24+sha.19031c2.darwin.amd64",
@@ -395,6 +431,12 @@ var (
 		},
 		{"v1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"v1.2.3-0123", nil, true},
+		{"v01.2.3", nil, true},
+		{"v1.02.3", nil, true},
+		{"v1.2.03", nil, true},
+		{"v01", nil, true},
+		{"v1.02", nil, true},
+		{"v01.02", nil, true},
 
 		{
 			"semver0.1.0-alpha.24+sha.19031c2.darwin.amd64",
@@ -458,6 +500,12 @@ var (
 		},
 		{"semver1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"semver1.2.3-0123", nil, true},
+		{"semver01.2.3", nil, true},
+		{"semver1.02.3", nil, true},
+		{"semver1.2.03", nil, true},
+		{"semver01", nil, true},
+		{"semver1.02", nil, true},
+		{"semver01.02", nil, true},
 
 		{"sem0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
 		{"sem0.1.0-alpha.24+sha.19031c2.darwin.amd64", nil, true},
@@ -497,6 +545,12 @@ var (
 		{"sem1.2.3+meta-pre.sha.256a", nil, true},
 		{"sem1.2.3-012a", nil, true},
 		{"sem1.2.3-0123", nil, true},
+		{"sem01.2.3", nil, true},
+		{"sem1.02.3", nil, true},
+		{"sem1.2.03", nil, true},
+		{"sem01", nil, true},
+		{"sem1.02", nil, true},
+		{"sem01.02", nil, true},
 
 		{
 			"se0.1.0-alpha.24+sha.19031c2.darwin.amd64",
@@ -560,6 +614,12 @@ var (
 		},
 		{"se1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"se1.2.3-0123", nil, true},
+		{"se01.2.3", nil, true},
+		{"se1.02.3", nil, true},
+		{"se1.2.03", nil, true},
+		{"se01", nil, true},
+		{"se1.02", nil, true},
+		{"se01.02", nil, true},
 	}
 )
 
