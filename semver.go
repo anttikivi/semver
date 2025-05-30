@@ -1,3 +1,7 @@
+// Package semver is a parser for version strings that adhere to Semantic
+// Versioning 2.0.0. The primary functions to use are [Parse] and [MustParse]
+// which parse the given version strings into [Version]s. To check if a string
+// is a valid version, you can use the [IsValid] function.
 package semver
 
 import (
@@ -9,12 +13,11 @@ import (
 	"unicode"
 )
 
-// errInvalidVersion is the error returned by the version parsing functions when
+// ErrInvalidVersion is the error returned by the version parsing functions when
 // they encounter invalid version string.
-//
-// TODO: Maybe implement different errors for the different cases.
-var errInvalidVersion = errors.New("invalid semantic version")
+var ErrInvalidVersion = errors.New("invalid semantic version")
 
+// BuildIdentifiers is a list of build identifiers in the Version.
 type BuildIdentifiers []string
 
 // A Version is a parsed instance of a version number that adheres to the
@@ -28,14 +31,65 @@ type Version struct {
 	rawStr     string
 }
 
+// Parse parses the given string into a Version. The version may have a 'v'
+// prefix.
+func Parse(ver string) (*Version, error) {
+	v, err := parse(ver)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	return v, nil
+}
+
+// ParsePrefix parses the given string into a Version. It allows the version to
+// have either one of the given prefixes or a 'v' prefix.
+func ParsePrefix(ver string, prefixes ...string) (*Version, error) {
+	v, err := parse(ver, prefixes...)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+
+	return v, nil
+}
+
+// MustParse parses the given string into a Version and panics if it encounters
+// an error. The version may have a 'v' prefix.
+func MustParse(ver string) *Version {
+	v, err := parse(ver)
+	if err != nil {
+		panic(fmt.Sprintf("failed to parse the string %q into a version: %v", ver, err))
+	}
+
+	return v
+}
+
+// MustParsePrefix parses the given string into a Version and panics if it
+// encounters an error. It allows the version to have either one of the given
+// prefixes or a 'v' prefix.
+func MustParsePrefix(ver string, prefixes ...string) *Version {
+	v, err := parse(ver, prefixes...)
+	if err != nil {
+		panic(fmt.Sprintf("failed to parse the string %q into a version: %v", ver, err))
+	}
+
+	return v
+}
+
+// Equal reports whether Version o is equal to v. The two Versions are equal if
+// all of their parts are; this includes the build metadata.
 func (v *Version) Equal(o *Version) bool {
 	if o == nil {
 		return v == nil
 	}
 
-	return v.Major == o.Major && v.Minor == o.Minor && v.Patch == o.Patch && v.Prerelease.Equal(o.Prerelease) && v.Build.equal(o.Build) //nolint:lll // we can have a long line here
+	return v.Major == o.Major && v.Minor == o.Minor && v.Patch == o.Patch &&
+		v.Prerelease.Equal(o.Prerelease) &&
+		v.Build.equal(o.Build)
 }
 
+// String returns the normal string representation of the version. It doesn't
+// include the build metadata.
 func (v *Version) String() string {
 	var sb strings.Builder
 
@@ -53,54 +107,12 @@ func (v *Version) String() string {
 	return sb.String()
 }
 
-// MustParse parses the given string into a Version and panic if it encounters
-// an error.
-// The version may have a 'v' prefix.
-func MustParse(ver string) *Version {
-	v, err := parse(ver)
-	if err != nil {
-		panic(fmt.Sprintf("failed to parse the string %q into a version: %v", ver, err))
-	}
-
-	return v
-}
-
-// MustParse parses the given string into a Version and panic if it encounters
-// an error.
-// It allows the version to have either one of the given prefixes or a 'v'
-// prefix.
-func MustParsePrefix(ver string, prefixes ...string) *Version {
-	v, err := parse(ver, prefixes...)
-	if err != nil {
-		panic(fmt.Sprintf("failed to parse the string %q into a version: %v", ver, err))
-	}
-
-	return v
-}
-
+// NewBuildIdentifiers returns new [BuildIdentifiers] for the given strings.
 func NewBuildIdentifiers(s ...string) BuildIdentifiers {
 	b := make(BuildIdentifiers, 0, len(s))
 	b = append(b, s...)
 
 	return b
-}
-
-func Parse(ver string) (*Version, error) {
-	v, err := parse(ver)
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
-	}
-
-	return v, nil
-}
-
-func ParsePrefix(ver string, prefixes ...string) (*Version, error) {
-	v, err := parse(ver, prefixes...)
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
-	}
-
-	return v, nil
 }
 
 func (i BuildIdentifiers) equal(o BuildIdentifiers) bool {
@@ -109,7 +121,7 @@ func (i BuildIdentifiers) equal(o BuildIdentifiers) bool {
 
 func parse(ver string, prefixes ...string) (*Version, error) {
 	if ver == "" {
-		return nil, fmt.Errorf("empty string: %w", errInvalidVersion)
+		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
 	}
 
 	pos := 0
@@ -128,7 +140,7 @@ func parse(ver string, prefixes ...string) (*Version, error) {
 
 	pos += countDigits(major)
 	if pos >= len(ver) || ver[pos] != '.' {
-		return nil, fmt.Errorf("no dot after the major version: %w", errInvalidVersion)
+		return nil, fmt.Errorf("no dot after the major version: %w", ErrInvalidVersion)
 	}
 
 	pos++
@@ -140,7 +152,7 @@ func parse(ver string, prefixes ...string) (*Version, error) {
 
 	pos += countDigits(minor)
 	if pos >= len(ver) || ver[pos] != '.' {
-		return nil, fmt.Errorf("no dot after the minor version: %w", errInvalidVersion)
+		return nil, fmt.Errorf("no dot after the minor version: %w", ErrInvalidVersion)
 	}
 
 	pos++
@@ -218,17 +230,24 @@ func isPrereleaseSeparator(c rune) bool {
 
 func parseBuild(s string) ([]string, error) {
 	if s == "" {
-		return nil, fmt.Errorf("cannot parse empty string as a build: %w", errInvalidVersion)
+		return nil, fmt.Errorf("cannot parse empty string as a build: %w", ErrInvalidVersion)
 	}
 
 	result := strings.Split(s, ".")
 	for _, v := range result {
 		if s == "" {
-			return nil, fmt.Errorf("empty string as a dot-separated build identifier: %w", errInvalidVersion)
+			return nil, fmt.Errorf(
+				"empty string as a dot-separated build identifier: %w",
+				ErrInvalidVersion,
+			)
 		}
 
 		if strings.ContainsFunc(v, func(r rune) bool { return !isAlphanumericIdentifier(r) }) {
-			return nil, fmt.Errorf("invalid rune in the build identifier %q: %w", v, errInvalidVersion)
+			return nil, fmt.Errorf(
+				"invalid rune in the build identifier %q: %w",
+				v,
+				ErrInvalidVersion,
+			)
 		}
 	}
 
@@ -241,11 +260,11 @@ func parseBuild(s string) ([]string, error) {
 // -1 if the parsing fails. The second return value is an error or nil.
 func parseNextInt(s string) (int, error) {
 	if s == "" {
-		return -1, fmt.Errorf("cannot parse empty string as int: %w", errInvalidVersion)
+		return -1, fmt.Errorf("cannot parse empty string as int: %w", ErrInvalidVersion)
 	}
 
 	if !unicode.IsDigit(rune(s[0])) {
-		return -1, fmt.Errorf("first character is not a digit: %w", errInvalidVersion)
+		return -1, fmt.Errorf("first character is not a digit: %w", ErrInvalidVersion)
 	}
 
 	i := 1
@@ -255,7 +274,7 @@ func parseNextInt(s string) (int, error) {
 
 	// Check that the number has no leading zeros.
 	if s[0] == '0' && i != 1 {
-		return -1, fmt.Errorf("the number has a leading zero: %w", errInvalidVersion)
+		return -1, fmt.Errorf("the number has a leading zero: %w", ErrInvalidVersion)
 	}
 
 	n, err := strconv.Atoi(s[:i])
@@ -270,12 +289,16 @@ func parseNextInt(s string) (int, error) {
 // allows using either a custom prefix or 'v' as a prefix in the version string.
 func parsePrefix(s string, p ...string) (string, error) {
 	if s == "" {
-		return "", fmt.Errorf("empty string: %w", errInvalidVersion)
+		return "", fmt.Errorf("empty string: %w", ErrInvalidVersion)
 	}
 
 	i := strings.IndexFunc(s, unicode.IsDigit)
 	if i == -1 {
-		return "", fmt.Errorf("version string %q has no digits after the possible prefix: %w", s, errInvalidVersion)
+		return "", fmt.Errorf(
+			"version string %q has no digits after the possible prefix: %w",
+			s,
+			ErrInvalidVersion,
+		)
 	}
 
 	if i == 0 {
@@ -284,7 +307,7 @@ func parsePrefix(s string, p ...string) (string, error) {
 
 	prefix := s[:i]
 	if !slices.Contains(p, prefix) && prefix != "v" {
-		return "", fmt.Errorf("invalid prefix %q: %w", prefix, errInvalidVersion)
+		return "", fmt.Errorf("invalid prefix %q: %w", prefix, ErrInvalidVersion)
 	}
 
 	return prefix, nil
@@ -292,7 +315,7 @@ func parsePrefix(s string, p ...string) (string, error) {
 
 func parsePrereleaseIdentifiers(s string) ([]prereleaseIdentifier, error) {
 	if s == "" {
-		return nil, fmt.Errorf("empty string: %w", errInvalidVersion)
+		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
 	}
 
 	var builder strings.Builder
@@ -315,7 +338,10 @@ func parsePrereleaseIdentifiers(s string) ([]prereleaseIdentifier, error) {
 		if isPrereleaseSeparator(rune(char)) || j == len(s)-1 {
 			current := builder.String()
 
-			isAlphanum := strings.ContainsFunc(current, func(r rune) bool { return !unicode.IsDigit(r) })
+			isAlphanum := strings.ContainsFunc(
+				current,
+				func(r rune) bool { return !unicode.IsDigit(r) },
+			)
 
 			switch {
 			case isAlphanum:
@@ -325,12 +351,19 @@ func parsePrereleaseIdentifiers(s string) ([]prereleaseIdentifier, error) {
 			case current[0] != '0':
 				num, err := strconv.Atoi(current)
 				if err != nil {
-					return nil, fmt.Errorf("failed to convert pre-release identifier to integer: %w", err)
+					return nil, fmt.Errorf(
+						"failed to convert pre-release identifier to integer: %w",
+						err,
+					)
 				}
 
 				result[i] = numericIdentifier{num}
 			default:
-				return nil, fmt.Errorf("invalid pre-release identifier %q: %w", current, errInvalidVersion)
+				return nil, fmt.Errorf(
+					"invalid pre-release identifier %q: %w",
+					current,
+					ErrInvalidVersion,
+				)
 			}
 
 			i++
@@ -343,7 +376,7 @@ func parsePrereleaseIdentifiers(s string) ([]prereleaseIdentifier, error) {
 		}
 
 		if !isAlphanumericIdentifier(rune(char)) && char != '.' {
-			return nil, fmt.Errorf("invalid pre-release identifier %q: %w", char, errInvalidVersion)
+			return nil, fmt.Errorf("invalid pre-release identifier %q: %w", char, ErrInvalidVersion)
 		}
 	}
 

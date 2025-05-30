@@ -1,45 +1,59 @@
+version: "2"
+
 linters:
-  enable-all: true
+  default: all
   disable:
-    - dupl
     - godox
-
-linters-settings:
-  cyclop:
-    # max-complexity: 10
-    max-complexity: 20
-  decorder:
-    dec-order:
-      - const
-      - var
-      - type
-      - func
-    ignore-underscore-vars: false
-    disable-dec-order-check: false
-    disable-init-func-first-check: false
-    disable-dec-num-check: true
-    disable-type-dec-num-check: false
-    disable-const-dec-num-check: false
-    disable-var-dec-num-check: false
-  depguard:
+  exclusions:
+    warn-unused: true
     rules:
-      Main:
-        list-mode: strict
-        allow:
-          - $gostd
-          - github.com/anttikivi/go-semver
-  funlen:
-    lines: 100
-    statements: 50
-    ignore-comments: true
-  gocritic:
-    enable-all: true
-    disabled-checks:
-      - commentedOutCode
-      - unnamedResult
-  varnamelen:
-    max-distance: 30
-    min-name-length: 3
+      - path: _test\.go
+        linters:
+          - dupl
+          - funlen
+          - gochecknoglobals
+          - goconst
+          - lll
+  settings:
+    cyclop:
+      max-complexity: 20
+    decorder:
+      dec-order:
+        - const
+        - var
+        - type
+        - func
+      ignore-underscore-vars: false
+      disable-dec-num-check: true
+      disable-type-dec-num-check: false
+      disable-const-dec-num-check: false
+      disable-var-dec-num-check: false
+      disable-dec-order-check: false
+      disable-init-func-first-check: false
+    depguard:
+      rules:
+        main:
+          list-mode: strict
+          allow:
+            - $gostd
+            - github.com/anttikivi/go-semver
+    funlen:
+      lines: 100
+      statements: 50
+      ignore-comments: true
+    gocritic:
+      enable-all: true
+      disabled-checks:
+        - commentedOutCode
+        - unnamedResult
+    varnamelen:
+      max-distance: 60
+      min-name-length: 3
 
-run:
-  timeout: "1m"
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+    - golines

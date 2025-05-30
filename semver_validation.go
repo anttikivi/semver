@@ -5,20 +5,20 @@ import (
 	"strings"
 )
 
-// IsValid reports whether s is a valid semantic version string.
-// The version may have a 'v' prefix.
+// IsValid reports whether s is a valid semantic version string. The version may
+// have a 'v' prefix.
 func IsValid(ver string) bool {
 	return isValid(ver)
 }
 
-// IsValidPrefix reports whether s is a valid semantic version string.
-// It allows the version to have either one of the given prefixes or a 'v'
-// prefix.
+// IsValidPrefix reports whether s is a valid semantic version string. It allows
+// the version to have either one of the given prefixes or a 'v' prefix.
 func IsValidPrefix(ver string, p ...string) bool {
 	return isValid(ver, p...)
 }
 
-func isValid(ver string, prefixes ...string) bool { //nolint:cyclop,funlen,gocognit,gocyclo // not really too complex
+//nolint:cyclop,funlen,gocognit,gocyclo // not really too complex
+func isValid(ver string, prefixes ...string) bool {
 	if ver == "" {
 		return false
 	}
@@ -158,7 +158,8 @@ func isValid(ver string, prefixes ...string) bool { //nolint:cyclop,funlen,gocog
 		pos++
 		for ; pos < length; pos++ {
 			b := ver[pos]
-			if ('A' > b || b > 'Z') && ('a' > b || b > 'z') && ('0' > b || b > '9') && b != '-' && b != '.' {
+			if ('A' > b || b > 'Z') && ('a' > b || b > 'z') && ('0' > b || b > '9') && b != '-' &&
+				b != '.' {
 				return false
 			}
 		}

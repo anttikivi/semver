@@ -10,7 +10,7 @@ import (
 const emptyName = "empty"
 
 var (
-	parserTests = []struct { //nolint:gochecknoglobals // test cases are shared between multiple tests
+	parserTests = []struct {
 		v       string
 		want    *semver.Version
 		wantErr bool
@@ -71,7 +71,11 @@ var (
 		{"1.2.3", newVersion(1, 2, 3, newPrerelease()), false},
 		{"1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
-		{"1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{
+			"1.2.3+meta-pre.sha.256a",
+			newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"),
+			false,
+		},
 		{"1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"1.2.3-0123", nil, true},
 
@@ -130,7 +134,11 @@ var (
 		{"v1.2.3", newVersion(1, 2, 3, newPrerelease()), false},
 		{"v1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"v1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
-		{"v1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{
+			"v1.2.3+meta-pre.sha.256a",
+			newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"),
+			false,
+		},
 		{"v1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"v1.2.3-0123", nil, true},
 
@@ -251,7 +259,7 @@ var (
 		{"se1.2.3-012a", nil, true},
 		{"se1.2.3-0123", nil, true},
 	}
-	prefixTests = []struct { //nolint:gochecknoglobals // test cases are shared between multiple tests
+	prefixTests = []struct {
 		v       string
 		want    *semver.Version
 		wantErr bool
@@ -312,7 +320,11 @@ var (
 		{"1.2.3", newVersion(1, 2, 3, newPrerelease()), false},
 		{"1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
-		{"1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{
+			"1.2.3+meta-pre.sha.256a",
+			newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"),
+			false,
+		},
 		{"1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"1.2.3-0123", nil, true},
 
@@ -371,7 +383,11 @@ var (
 		{"v1.2.3", newVersion(1, 2, 3, newPrerelease()), false},
 		{"v1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"v1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
-		{"v1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{
+			"v1.2.3+meta-pre.sha.256a",
+			newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"),
+			false,
+		},
 		{"v1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"v1.2.3-0123", nil, true},
 
@@ -430,7 +446,11 @@ var (
 		{"semver1.2.3", newVersion(1, 2, 3, newPrerelease()), false},
 		{"semver1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"semver1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
-		{"semver1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{
+			"semver1.2.3+meta-pre.sha.256a",
+			newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"),
+			false,
+		},
 		{"semver1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"semver1.2.3-0123", nil, true},
 
@@ -528,7 +548,11 @@ var (
 		{"se1.2.3", newVersion(1, 2, 3, newPrerelease()), false},
 		{"se1.2.3+meta", newVersion(1, 2, 3, newPrerelease(), "meta"), false},
 		{"se1.2.3+meta-pre", newVersion(1, 2, 3, newPrerelease(), "meta-pre"), false},
-		{"se1.2.3+meta-pre.sha.256a", newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"), false},
+		{
+			"se1.2.3+meta-pre.sha.256a",
+			newVersion(1, 2, 3, newPrerelease(), "meta-pre", "sha", "256a"),
+			false,
+		},
 		{"se1.2.3-012a", newVersion(1, 2, 3, newPrerelease("012a")), false},
 		{"se1.2.3-0123", nil, true},
 	}
@@ -640,7 +664,7 @@ func TestParsePrefix(t *testing.T) {
 	}
 }
 
-func TestVersionString(t *testing.T) { //nolint:funlen // lot's of test cases
+func TestVersionString(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -779,7 +803,7 @@ func TestVersionString(t *testing.T) { //nolint:funlen // lot's of test cases
 	}
 }
 
-func TestVersionStringWithPrefix(t *testing.T) { //nolint:funlen // lot's of test cases
+func TestVersionStringWithPrefix(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -908,7 +932,11 @@ func TestVersionStringWithPrefix(t *testing.T) { //nolint:funlen // lot's of tes
 
 			got, _ := semver.ParsePrefix(tt.v, "semver")
 			if tt.want == "" && got != nil {
-				t.Fatalf("ParsePrefix(%q, %q) succeeded unexpectedly in the string test", tt.v, "semver")
+				t.Fatalf(
+					"ParsePrefix(%q, %q) succeeded unexpectedly in the string test",
+					tt.v,
+					"semver",
+				)
 			}
 
 			if got != nil && got.String() != tt.want {
@@ -919,7 +947,7 @@ func TestVersionStringWithPrefix(t *testing.T) { //nolint:funlen // lot's of tes
 }
 
 func BenchmarkParse(b *testing.B) {
-	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64" //nolint:goconst // test case
+	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
 	for range b.N {
 		_, _ = semver.Parse(test)

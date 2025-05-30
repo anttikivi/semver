@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -z "$1" ]]; then
+  echo "No version given as an argument" >&2
+  exit 1
+fi
+
+golines_version="$1"
+checksum_file="golines_${golines_version}_checksums.txt"
+archive_file="golines_${golines_version}_$(uname | tr '[:upper:]' '[:lower:]')_$(uname -m).tar.gz"
+
+if [[ "$(uname)" == "Darwin" ]]; then
+  archive_file="golines_${golines_version}_darwin_all.tar.gz"
+fi
+
+# TODO: Do we need to check the Go path?
+destination="${GOPATH}/bin/golines"
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+cd "${script_dir}/.."
+
+mkdir tmp
+
+cd tmp
+
+curl -sSfLO "https://github.com/segmentio/golines/releases/download/v${golines_version}/${checksum_file}"
+curl -sSfLO "https://github.com/segmentio/golines/releases/download/v${golines_version}/${archive_file}" -o ./tmp/golines.tar.gz
+sha256sum -c --ignore-missing "${checksum_file}"
+
+if [[ -f "${destination}" ]]; then
+  rm "${destination}"
+fi
+
+if [[ ! -d "$(dirname "${destination}")" ]]; then
+  mkdir -p "$(dirname "${destination}")"
+fi
+
+tar --strip-components=1 -C "$(dirname "${destination}")" -xf "${archive_file}" "$(basename "${archive_file}" ".tar.gz")/golines"
+
+cd ..
+
+rm -rf tmp

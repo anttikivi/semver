@@ -7,9 +7,9 @@ import (
 	"github.com/anttikivi/go-semver"
 )
 
-const rawVersionRegex = `^v?(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$` //nolint:lll // regexp
+const rawVersionRegex = `^v?(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$`
 
-var versionRegex *regexp.Regexp //nolint:gochecknoglobals // needed for these tests
+var versionRegex *regexp.Regexp
 
 func init() { //nolint:gochecknoinits // needed for these tests
 	versionRegex = regexp.MustCompile(rawVersionRegex)
@@ -57,7 +57,7 @@ func BenchmarkIsValidRegexShorter(b *testing.B) {
 	}
 }
 
-func TestIsValid(t *testing.T) { //nolint:funlen // lot's of test cases
+func TestIsValid(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -264,7 +264,7 @@ func TestIsValid(t *testing.T) { //nolint:funlen // lot's of test cases
 	}
 }
 
-func TestIsValidPrefix(t *testing.T) { //nolint:funlen // lot's of test cases
+func TestIsValidPrefix(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -467,7 +467,7 @@ func TestIsValidPrefix(t *testing.T) { //nolint:funlen // lot's of test cases
 	}
 }
 
-func TestIsValidRegex(t *testing.T) { //nolint:funlen // lot's of test cases
+func TestIsValidRegex(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
