@@ -13,14 +13,19 @@ This project adheres to
   includes the build metadata.
 - `Version.StrictEqual` function that compares the whole version data to
   determine the equality of two versions, including build metadata.
-- `IsValidPartial` and `IsValidPartialPrefix` for checking if partial version
-  strings are valid.
+- `IsValidPartial` for checking if partial version strings are valid.
 
 ### Changed
 
 - `Version.Equal` function to only compare the version parts up to the build
   metadata as the build metadata is not comparable in the semantic versioning
   specification.
+
+### Removed
+
+- The `Prefix` variants of the functions: `IsValidPrefix`, `ParsePrefix`, and
+  `MustParsePrefix` as the Go standard library offers an easy way to remove
+  prefixes from strings.
 
 ### Fixed
 

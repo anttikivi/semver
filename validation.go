@@ -2,7 +2,6 @@ package semver
 
 import (
 	"fmt"
-	"slices"
 	"strings"
 )
 
@@ -23,12 +22,6 @@ func IsValid(ver string) bool {
 	return isValid(ver)
 }
 
-// IsValidPrefix reports whether s is a valid semantic version string. It allows
-// the version to have either one of the given prefixes or a 'v' prefix.
-func IsValidPrefix(ver string, p ...string) bool {
-	return isValid(ver, p...)
-}
-
 // IsValidPartial reports whether s is a valid semantic version string even if
 // it is only a partial version. In other words, this function reads `v1` and
 // `v1.2` as valid versions. The version may have a 'v' prefix.
@@ -36,16 +29,8 @@ func IsValidPartial(ver string) bool {
 	return isValidPartial(ver)
 }
 
-// IsValidPartialPrefix reports whether s is a valid semantic version string
-// even if it is only a partial version. In other words, this function reads
-// `v1` and `v1.2` as valid versions. It allows the version to have either one
-// of the given prefixes or a 'v' prefix.
-func IsValidPartialPrefix(ver string, p ...string) bool {
-	return isValidPartial(ver, p...)
-}
-
-func isValid(ver string, prefixes ...string) bool {
-	ok, pos := isStartValid(ver, prefixes...)
+func isValid(ver string) bool {
+	ok, pos := isStartValid(ver)
 	if !ok {
 		return false
 	}
@@ -106,8 +91,8 @@ func isValid(ver string, prefixes ...string) bool {
 	return true
 }
 
-func isValidPartial(ver string, prefixes ...string) bool {
-	ok, pos := isStartValid(ver, prefixes...)
+func isValidPartial(ver string) bool {
+	ok, pos := isStartValid(ver)
 	if !ok {
 		return false
 	}
@@ -177,7 +162,7 @@ func isValidPartial(ver string, prefixes ...string) bool {
 // isStartValid checks if the start of the version string is valid. The function
 // checks the prefix and that the string actually contains numbers. It returns
 // the status of the check and the current index.
-func isStartValid(ver string, prefixes ...string) (bool, int) {
+func isStartValid(ver string) (bool, int) {
 	if ver == "" {
 		return false, 0
 	}
@@ -192,8 +177,9 @@ func isStartValid(ver string, prefixes ...string) (bool, int) {
 	// the version string has a prefix. We need to check if it is one of
 	// the valid prefixes.
 	if pos != 0 {
+		// TODO: This is unnecessary.
 		prefix := ver[:pos]
-		if !slices.Contains(prefixes, prefix) && prefix != "v" {
+		if prefix != "v" {
 			return false, pos
 		}
 	}

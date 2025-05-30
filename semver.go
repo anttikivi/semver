@@ -42,33 +42,10 @@ func Parse(ver string) (*Version, error) {
 	return v, nil
 }
 
-// ParsePrefix parses the given string into a Version. It allows the version to
-// have either one of the given prefixes or a 'v' prefix.
-func ParsePrefix(ver string, prefixes ...string) (*Version, error) {
-	v, err := parse(ver, prefixes...)
-	if err != nil {
-		return nil, fmt.Errorf("%w", err)
-	}
-
-	return v, nil
-}
-
 // MustParse parses the given string into a Version and panics if it encounters
 // an error. The version may have a 'v' prefix.
 func MustParse(ver string) *Version {
 	v, err := parse(ver)
-	if err != nil {
-		panic(fmt.Sprintf("failed to parse the string %q into a version: %v", ver, err))
-	}
-
-	return v
-}
-
-// MustParsePrefix parses the given string into a Version and panics if it
-// encounters an error. It allows the version to have either one of the given
-// prefixes or a 'v' prefix.
-func MustParsePrefix(ver string, prefixes ...string) *Version {
-	v, err := parse(ver, prefixes...)
 	if err != nil {
 		panic(fmt.Sprintf("failed to parse the string %q into a version: %v", ver, err))
 	}
@@ -174,14 +151,14 @@ func (b BuildIdentifiers) equal(o BuildIdentifiers) bool {
 	return slices.Equal(b, o)
 }
 
-func parse(ver string, prefixes ...string) (*Version, error) {
+func parse(ver string) (*Version, error) {
 	if ver == "" {
 		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
 	}
 
 	pos := 0
 
-	prefix, err := parsePrefix(ver, prefixes...)
+	prefix, err := parsePrefix(ver)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the version prefix: %w", err)
 	}
@@ -346,7 +323,7 @@ func parseNextInt(s string) (int, error) {
 
 // parsePrefix parses the possible prefixes for the version string. The program
 // allows using either a custom prefix or 'v' as a prefix in the version string.
-func parsePrefix(s string, p ...string) (string, error) {
+func parsePrefix(s string) (string, error) {
 	if s == "" {
 		return "", fmt.Errorf("empty string: %w", ErrInvalidVersion)
 	}
@@ -364,8 +341,9 @@ func parsePrefix(s string, p ...string) (string, error) {
 		return "", nil
 	}
 
+	// TODO: The prefix can be checked more easily.
 	prefix := s[:i]
-	if !slices.Contains(p, prefix) && prefix != "v" {
+	if prefix != "v" {
 		return "", fmt.Errorf("invalid prefix %q: %w", prefix, ErrInvalidVersion)
 	}
 
