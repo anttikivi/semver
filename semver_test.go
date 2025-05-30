@@ -1222,7 +1222,13 @@ func TestVersionFullStringWithPrefix(t *testing.T) {
 			}
 
 			if got != nil && got.FullString() != tt.want {
-				t.Errorf("ParsePrefix(%q, %q).FullString() = %v, want %v", tt.v, "semver", got, tt.want)
+				t.Errorf(
+					"ParsePrefix(%q, %q).FullString() = %v, want %v",
+					tt.v,
+					"semver",
+					got,
+					tt.want,
+				)
 			}
 		})
 	}
