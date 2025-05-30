@@ -6,8 +6,9 @@
 
 The `go-semver` package provides utilities and a parser to work with version
 numbers that adhere to [semantic versioning](https://semver.org). It is designed
-to be faster than the common alternatives: the package implements custom parser
-instead of using regular expressions, which seems to be a lot faster.
+to perform relatively well compared to common alternatives: the package
+implements custom parser instead of using regular expressions, which seems to be
+faster.
 
 ## Install
 
