@@ -407,7 +407,7 @@ func TestVersionString(t *testing.T) {
 				t.Fatalf("Parse(%q) succeeded unexpectedly in the string test", tt.v)
 			}
 
-			if got != nil && got.String() != tt.want {
+			if got != nil && got.Core() != tt.want {
 				t.Errorf("Version{%q}.String() = %v, want %v", tt.v, got, tt.want)
 			}
 		})
@@ -564,7 +564,7 @@ func TestVersionFullString(t *testing.T) {
 				t.Fatalf("Parse(%q) succeeded unexpectedly in the string test", tt.v)
 			}
 
-			if got != nil && got.FullString() != tt.want {
+			if got != nil && got.String() != tt.want {
 				t.Errorf("Version{%q}.FullString() = %v, want %v", tt.v, got, tt.want)
 			}
 		})
@@ -597,7 +597,7 @@ func newPrerelease(a ...any) semver.Prerelease {
 	return p
 }
 
-func newVersion(major, minor, patch int, pr semver.Prerelease, b ...string) *semver.Version {
+func newVersion(major, minor, patch uint64, pr semver.Prerelease, b ...string) *semver.Version {
 	return &semver.Version{
 		Major:      major,
 		Minor:      minor,

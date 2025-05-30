@@ -23,9 +23,9 @@ type BuildIdentifiers []string
 // A Version is a parsed instance of a version number that adheres to the
 // semantic versioning 2.0.0.
 type Version struct {
-	Major      int
-	Minor      int
-	Patch      int
+	Major      uint64
+	Minor      uint64
+	Patch      uint64
 	Prerelease Prerelease
 	Build      BuildIdentifiers
 	rawStr     string
@@ -83,11 +83,11 @@ func (v *Version) StrictEqual(o *Version) bool {
 func (v *Version) Core() string {
 	var sb strings.Builder
 
-	sb.WriteString(strconv.Itoa(v.Major))
+	sb.WriteString(strconv.FormatUint(v.Major, 10))
 	sb.WriteByte('.')
-	sb.WriteString(strconv.Itoa(v.Minor))
+	sb.WriteString(strconv.FormatUint(v.Minor, 10))
 	sb.WriteByte('.')
-	sb.WriteString(strconv.Itoa(v.Patch))
+	sb.WriteString(strconv.FormatUint(v.Patch, 10))
 
 	if len(v.Prerelease.identifiers) > 0 {
 		sb.WriteByte('-')
@@ -101,11 +101,11 @@ func (v *Version) Core() string {
 func (v *Version) String() string {
 	var sb strings.Builder
 
-	sb.WriteString(strconv.Itoa(v.Major))
+	sb.WriteString(strconv.FormatUint(v.Major, 10))
 	sb.WriteByte('.')
-	sb.WriteString(strconv.Itoa(v.Minor))
+	sb.WriteString(strconv.FormatUint(v.Minor, 10))
 	sb.WriteByte('.')
-	sb.WriteString(strconv.Itoa(v.Patch))
+	sb.WriteString(strconv.FormatUint(v.Patch, 10))
 
 	if len(v.Prerelease.identifiers) > 0 {
 		sb.WriteByte('-')
@@ -164,7 +164,7 @@ func parse(ver string) (*Version, error) {
 
 	pos += len(prefix)
 
-	major, err := parseNextInt(ver[pos:])
+	major, err := parseNext(ver[pos:])
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the major version: %w", err)
 	}
@@ -176,7 +176,7 @@ func parse(ver string) (*Version, error) {
 
 	pos++
 
-	minor, err := parseNextInt(ver[pos:])
+	minor, err := parseNext(ver[pos:])
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the minor version: %w", err)
 	}
@@ -188,7 +188,7 @@ func parse(ver string) (*Version, error) {
 
 	pos++
 
-	patch, err := parseNextInt(ver[pos:])
+	patch, err := parseNext(ver[pos:])
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the patch version: %w", err)
 	}
@@ -240,7 +240,7 @@ func parse(ver string) (*Version, error) {
 	}, nil
 }
 
-func countDigits(i int) int {
+func countDigits(i uint64) int {
 	if i == 0 {
 		return 1
 	}
@@ -255,12 +255,12 @@ func countDigits(i int) int {
 	return count
 }
 
-func isAlphanumericIdentifier(c rune) bool {
-	return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || unicode.IsDigit(c) || c == '-'
+func isAlphanumericIdentifier(b byte) bool {
+	return ('A' <= b && b <= 'Z') || ('a' <= b && b <= 'z') || ('0' <= b && b <= '9') || b == '-'
 }
 
-func isPrereleaseSeparator(c rune) bool {
-	return c == '.' || c == '+'
+func isPrereleaseSeparator(b byte) bool {
+	return b == '.' || b == '+'
 }
 
 func parseBuild(s string) ([]string, error) {
@@ -277,7 +277,12 @@ func parseBuild(s string) ([]string, error) {
 			)
 		}
 
-		if strings.ContainsFunc(v, func(r rune) bool { return !isAlphanumericIdentifier(r) }) {
+		// This should be safe as all of the characters in the version must be
+		// ASCII.
+		if strings.ContainsFunc(
+			v,
+			func(r rune) bool { return !isAlphanumericIdentifier(byte(r)) },
+		) {
 			return nil, fmt.Errorf(
 				"invalid rune in the build identifier %q: %w",
 				v,
@@ -289,35 +294,35 @@ func parseBuild(s string) ([]string, error) {
 	return result, nil
 }
 
-// parseNextInt parses the next integer from the given string. The string should
-// be a version string or the next part to parse from a version string adhering
-// to the semantic versioning. The first return value is the parsed interger, or
-// -1 if the parsing fails. The second return value is an error or nil.
-func parseNextInt(s string) (int, error) {
+// parseNext parses the next integer from the given string. The string should be
+// a version string or the next part to parse from a version string adhering to
+// the semantic versioning.
+func parseNext(s string) (uint64, error) {
 	if s == "" {
-		return -1, fmt.Errorf("cannot parse empty string as int: %w", ErrInvalidVersion)
+		return 0, fmt.Errorf("cannot parse empty string as int: %w", ErrInvalidVersion)
 	}
 
-	if !unicode.IsDigit(rune(s[0])) {
-		return -1, fmt.Errorf("first character is not a digit: %w", ErrInvalidVersion)
+	b := s[0]
+	if b < '0' || '9' < b {
+		return 0, fmt.Errorf("first character is not a digit: %w", ErrInvalidVersion)
 	}
 
 	i := 1
-	for i < len(s) && unicode.IsDigit(rune(s[i])) {
+	for i < len(s) && '0' <= s[i] && s[i] <= '9' {
 		i++
 	}
 
 	// Check that the number has no leading zeros.
 	if s[0] == '0' && i != 1 {
-		return -1, fmt.Errorf("the number has a leading zero: %w", ErrInvalidVersion)
+		return 0, fmt.Errorf("the number has a leading zero: %w", ErrInvalidVersion)
 	}
 
-	n, err := strconv.Atoi(s[:i])
+	u, err := strconv.ParseUint(s[:i], 10, 64)
 	if err != nil {
-		return -1, fmt.Errorf("failed to convert the string %s to integer: %w", s[:i], err)
+		return 0, fmt.Errorf("failed to convert the string %s to integer: %w", s[:i], err)
 	}
 
-	return n, nil
+	return u, nil
 }
 
 // parsePrefix parses the possible prefixes for the version string. The program
@@ -367,11 +372,11 @@ func parsePrereleaseIdentifiers(s string) ([]prereleaseIdentifier, error) {
 
 	for j := range len(s) {
 		char := s[j]
-		if !isPrereleaseSeparator(rune(char)) {
+		if !isPrereleaseSeparator(char) {
 			builder.WriteByte(char)
 		}
 
-		if isPrereleaseSeparator(rune(char)) || j == len(s)-1 {
+		if isPrereleaseSeparator(char) || j == len(s)-1 {
 			current := builder.String()
 
 			isAlphanum := strings.ContainsFunc(
@@ -385,7 +390,7 @@ func parsePrereleaseIdentifiers(s string) ([]prereleaseIdentifier, error) {
 			case current == "0":
 				result[i] = numericIdentifier{0}
 			case current[0] != '0':
-				num, err := strconv.Atoi(current)
+				num, err := strconv.ParseUint(current, 10, 64)
 				if err != nil {
 					return nil, fmt.Errorf(
 						"failed to convert pre-release identifier to integer: %w",
@@ -411,7 +416,7 @@ func parsePrereleaseIdentifiers(s string) ([]prereleaseIdentifier, error) {
 			builder.Reset()
 		}
 
-		if !isAlphanumericIdentifier(rune(char)) && char != '.' {
+		if !isAlphanumericIdentifier(char) && char != '.' {
 			return nil, fmt.Errorf("invalid pre-release identifier %q: %w", char, ErrInvalidVersion)
 		}
 	}

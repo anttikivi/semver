@@ -17,6 +17,7 @@ This project adheres to
 
 ### Changed
 
+- Change all of the number values in the versions to `uint64`s.
 - `Version.Equal` function to only compare the version parts up to the build
   metadata as the build metadata is not comparable in the semantic versioning
   specification.

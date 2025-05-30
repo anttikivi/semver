@@ -26,16 +26,12 @@ type prereleaseIdentifier interface {
 	// String returns the string representation of the identifier.
 	String() string
 
-	// Value returns the Value for the identifier. If the identifier is a
-	// numeric one, the Value is returned using the first return Value and the
-	// second return Value is an empty string. If the identifier is an
-	// alphanumeric identifier, the Value is returned using the second return
-	// Value and the first return Value is -1.
-	Value() (n int, s string)
+	// Value returns the Value for the identifier.
+	Value() any
 }
 
 type numericIdentifier struct {
-	v int
+	v uint64
 }
 
 type alphanumericIdentifier struct {
@@ -50,6 +46,12 @@ func NewPrerelease(a ...any) (Prerelease, error) {
 	for _, v := range a {
 		switch u := v.(type) {
 		case int:
+			if u < 0 {
+				return Prerelease{}, fmt.Errorf("%w: %v", errInvalidPrereleaseIndent, v)
+			}
+
+			identifiers = append(identifiers, numericIdentifier{uint64(u)})
+		case uint64:
 			identifiers = append(identifiers, numericIdentifier{u})
 		case string:
 			identifiers = append(identifiers, alphanumericIdentifier{u})
@@ -74,16 +76,16 @@ func (p Prerelease) String() string {
 
 	if len(p.identifiers) > 0 {
 		for _, ident := range p.identifiers {
-			i, s := ident.Value()
+			val := ident.Value()
 
-			switch {
-			case i >= 0 && s == "":
-				sb.WriteString(strconv.Itoa(i))
-			case i == -1 && s != "":
-				sb.WriteString(s)
+			switch v := val.(type) {
+			case uint64:
+				sb.WriteString(strconv.FormatUint(v, 10))
+			case string:
+				sb.WriteString(v)
 			default:
 				// TODO: Try not to panic, but we should never get here.
-				panic(fmt.Sprintf("invalid pre-release identifier options: %d and %s", i, s))
+				panic(fmt.Sprintf("invalid pre-release identifier option: %[1]v (%[1]T)", val))
 			}
 
 			sb.WriteRune('.')
@@ -104,10 +106,17 @@ func (i numericIdentifier) Equal(o prereleaseIdentifier) bool {
 		return false
 	}
 
-	v1, _ := i.Value()
-	v2, _ := other.Value()
+	a, ok := i.Value().(uint64)
+	if !ok {
+		panic(fmt.Sprintf("failed to convert %[1]v (%[1]T) to uint64", i.Value()))
+	}
 
-	return v1 == v2
+	b, ok := other.Value().(uint64)
+	if !ok {
+		panic(fmt.Sprintf("failed to convert %[1]v (%[1]T) to uint64", other.Value()))
+	}
+
+	return a == b
 }
 
 // Len returns the length of the pre-release identifier in characters.
@@ -117,16 +126,12 @@ func (i numericIdentifier) Len() int {
 
 // String returns the string representation of the identifier.
 func (i numericIdentifier) String() string {
-	return strconv.Itoa(i.v)
+	return strconv.FormatUint(i.v, 10)
 }
 
-// Value returns the Value for the identifier. If the identifier is a numeric
-// one, the Value is returned using the first return Value and the second return
-// Value is an empty string. If the identifier is an alphanumeric identifier,
-// the Value is returned using the second return Value and the first return
-// Value is -1.
-func (i numericIdentifier) Value() (int, string) {
-	return i.v, ""
+// Value returns the Value for the identifier.
+func (i numericIdentifier) Value() any {
+	return i.v
 }
 
 // Equal tells if the given prereleaseIdentifier is equal to this one.
@@ -136,10 +141,17 @@ func (i alphanumericIdentifier) Equal(o prereleaseIdentifier) bool {
 		return false
 	}
 
-	_, v1 := i.Value()
-	_, v2 := other.Value()
+	a, ok := i.Value().(string)
+	if !ok {
+		panic(fmt.Sprintf("failed to convert %[1]v (%[1]T) to string", i.Value()))
+	}
 
-	return v1 == v2
+	b, ok := other.Value().(string)
+	if !ok {
+		panic(fmt.Sprintf("failed to convert %[1]v (%[1]T) to string", other.Value()))
+	}
+
+	return a == b
 }
 
 // Len returns the length of the pre-release identifier in characters.
@@ -152,11 +164,7 @@ func (i alphanumericIdentifier) String() string {
 	return i.v
 }
 
-// Value returns the Value for the identifier. If the identifier is a numeric
-// one, the Value is returned using the first return Value and the second return
-// Value is an empty string. If the identifier is an alphanumeric identifier,
-// the Value is returned using the second return Value and the first return
-// Value is -1.
-func (i alphanumericIdentifier) Value() (int, string) {
-	return -1, i.v
+// Value returns the Value for the identifier.
+func (i alphanumericIdentifier) Value() any {
+	return i.v
 }
