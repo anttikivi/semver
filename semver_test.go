@@ -775,6 +775,12 @@ func TestVersionString(t *testing.T) {
 		{"1.2.3+meta-pre.sha.256a", "1.2.3"},
 		{"1.2.3-012a", "1.2.3-012a"},
 		{"1.2.3-0123", ""},
+		{"01.2.3", ""},
+		{"1.02.3", ""},
+		{"1.2.03", ""},
+		{"01", ""},
+		{"1.02", ""},
+		{"01.02", ""},
 
 		{"v", ""},
 		{"vbad", ""},
@@ -811,6 +817,12 @@ func TestVersionString(t *testing.T) {
 		{"v1.2.3+meta-pre.sha.256a", "1.2.3"},
 		{"v1.2.3-012a", "1.2.3-012a"},
 		{"v1.2.3-0123", ""},
+		{"v01.2.3", ""},
+		{"v1.02.3", ""},
+		{"v1.2.03", ""},
+		{"v01", ""},
+		{"v1.02", ""},
+		{"v01.02", ""},
 
 		{"semverbad", ""},
 		{"semver1-alpha.beta.gamma", ""},
@@ -846,6 +858,12 @@ func TestVersionString(t *testing.T) {
 		{"semver1.2.3+meta-pre.sha.256a", ""},
 		{"semver1.2.3-012a", ""},
 		{"semver1.2.3-0123", ""},
+		{"semver01.2.3", ""},
+		{"semver1.02.3", ""},
+		{"semver1.2.03", ""},
+		{"semver01", ""},
+		{"semver1.02", ""},
+		{"semver01.02", ""},
 	}
 	for _, tt := range tests {
 		name := tt.v
@@ -914,6 +932,12 @@ func TestVersionStringWithPrefix(t *testing.T) {
 		{"1.2.3+meta-pre.sha.256a", "1.2.3"},
 		{"1.2.3-012a", "1.2.3-012a"},
 		{"1.2.3-0123", ""},
+		{"01.2.3", ""},
+		{"1.02.3", ""},
+		{"1.2.03", ""},
+		{"01", ""},
+		{"1.02", ""},
+		{"01.02", ""},
 
 		{"v", ""},
 		{"vbad", ""},
@@ -950,6 +974,12 @@ func TestVersionStringWithPrefix(t *testing.T) {
 		{"v1.2.3+meta-pre.sha.256a", "1.2.3"},
 		{"v1.2.3-012a", "1.2.3-012a"},
 		{"v1.2.3-0123", ""},
+		{"v01.2.3", ""},
+		{"v1.02.3", ""},
+		{"v1.2.03", ""},
+		{"v01", ""},
+		{"v1.02", ""},
+		{"v01.02", ""},
 
 		{"semverbad", ""},
 		{"semver1-alpha.beta.gamma", ""},
@@ -985,6 +1015,12 @@ func TestVersionStringWithPrefix(t *testing.T) {
 		{"semver1.2.3+meta-pre.sha.256a", "1.2.3"},
 		{"semver1.2.3-012a", "1.2.3-012a"},
 		{"semver1.2.3-0123", ""},
+		{"semver01.2.3", ""},
+		{"semver1.02.3", ""},
+		{"semver1.2.03", ""},
+		{"semver01", ""},
+		{"semver1.02", ""},
+		{"semver01.02", ""},
 	}
 	for _, tt := range tests {
 		name := tt.v
@@ -1057,6 +1093,12 @@ func TestVersionFullString(t *testing.T) {
 		{"1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
 		{"1.2.3-012a", "1.2.3-012a"},
 		{"1.2.3-0123", ""},
+		{"01.2.3", ""},
+		{"1.02.3", ""},
+		{"1.2.03", ""},
+		{"01", ""},
+		{"1.02", ""},
+		{"01.02", ""},
 
 		{"v", ""},
 		{"vbad", ""},
@@ -1093,6 +1135,12 @@ func TestVersionFullString(t *testing.T) {
 		{"v1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
 		{"v1.2.3-012a", "1.2.3-012a"},
 		{"v1.2.3-0123", ""},
+		{"v01.2.3", ""},
+		{"v1.02.3", ""},
+		{"v1.2.03", ""},
+		{"v01", ""},
+		{"v1.02", ""},
+		{"v01.02", ""},
 
 		{"semverbad", ""},
 		{"semver1-alpha.beta.gamma", ""},
@@ -1128,6 +1176,12 @@ func TestVersionFullString(t *testing.T) {
 		{"semver1.2.3+meta-pre.sha.256a", ""},
 		{"semver1.2.3-012a", ""},
 		{"semver1.2.3-0123", ""},
+		{"semver01.2.3", ""},
+		{"semver1.02.3", ""},
+		{"semver1.2.03", ""},
+		{"semver01", ""},
+		{"semver1.02", ""},
+		{"semver01.02", ""},
 	}
 	for _, tt := range tests {
 		name := tt.v
@@ -1196,6 +1250,12 @@ func TestVersionFullStringWithPrefix(t *testing.T) {
 		{"1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
 		{"1.2.3-012a", "1.2.3-012a"},
 		{"1.2.3-0123", ""},
+		{"01.2.3", ""},
+		{"1.02.3", ""},
+		{"1.2.03", ""},
+		{"01", ""},
+		{"1.02", ""},
+		{"01.02", ""},
 
 		{"v", ""},
 		{"vbad", ""},
@@ -1232,6 +1292,12 @@ func TestVersionFullStringWithPrefix(t *testing.T) {
 		{"v1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
 		{"v1.2.3-012a", "1.2.3-012a"},
 		{"v1.2.3-0123", ""},
+		{"v01.2.3", ""},
+		{"v1.02.3", ""},
+		{"v1.2.03", ""},
+		{"v01", ""},
+		{"v1.02", ""},
+		{"v01.02", ""},
 
 		{"semverbad", ""},
 		{"semver1-alpha.beta.gamma", ""},
@@ -1267,6 +1333,12 @@ func TestVersionFullStringWithPrefix(t *testing.T) {
 		{"semver1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
 		{"semver1.2.3-012a", "1.2.3-012a"},
 		{"semver1.2.3-0123", ""},
+		{"semver01.2.3", ""},
+		{"semver1.02.3", ""},
+		{"semver1.2.03", ""},
+		{"semver01", ""},
+		{"semver1.02", ""},
+		{"semver01.02", ""},
 	}
 	for _, tt := range tests {
 		name := tt.v
