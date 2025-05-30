@@ -7,6 +7,11 @@ This project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- `Version.FullString` function that returns the version as a string that
+  includes the build metadata.
+
 ## [0.2.0] - 2025-01-01
 
 ### Added
