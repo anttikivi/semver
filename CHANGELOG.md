@@ -9,8 +9,8 @@ This project adheres to
 
 ### Added
 
-- `Version.FullString` function that returns the version as a string that
-  includes the build metadata.
+- `Version.Core` function that returns the version as a string without the build
+  identifiers.
 - `Version.StrictEqual` function that compares the whole version data to
   determine the equality of two versions, including build metadata.
 - `IsValidLax` for checking if partial version strings are valid.
@@ -20,6 +20,7 @@ This project adheres to
 - `Version.Equal` function to only compare the version parts up to the build
   metadata as the build metadata is not comparable in the semantic versioning
   specification.
+- `Version.String` to include the build metadata in the string.
 
 ### Removed
 

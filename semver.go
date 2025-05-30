@@ -78,9 +78,9 @@ func (v *Version) StrictEqual(o *Version) bool {
 		v.Build.equal(o.Build)
 }
 
-// String returns the normal string representation of the version. It doesn't
+// Core returns the comparable string representation of the version. It doesn't
 // include the build metadata.
-func (v *Version) String() string {
+func (v *Version) Core() string {
 	var sb strings.Builder
 
 	sb.WriteString(strconv.Itoa(v.Major))
@@ -97,9 +97,8 @@ func (v *Version) String() string {
 	return sb.String()
 }
 
-// FullString returns the full string representation of the version including
-// the build metadata.
-func (v *Version) FullString() string {
+// String returns the string representation of the version.
+func (v *Version) String() string {
 	var sb strings.Builder
 
 	sb.WriteString(strconv.Itoa(v.Major))
