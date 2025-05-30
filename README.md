@@ -1,13 +1,13 @@
 # Semantic Version Parser for Go
 
-This is my parser for version strings that adhere to
-[semantic versioning](https://semver.org) in Go. It should implement the
-semantic versioning spec and be simple to use.
+[![CI](https://github.com/anttikivi/go-semver/actions/workflows/ci.yml/badge.svg)](https://github.com/anttikivi/go-semver/actions/workflows/ci.yml)
+[![Godoc](https://godoc.org/github.com/anttikivi/go-semver?status.svg)](https://godoc.org/github.com/anttikivi/go-semver)
+[![Go Report Card](https://goreportcard.com/badge/github.com/anttikivi/go-semver)](https://goreportcard.com/report/github.com/anttikivi/go-semver)
 
-There are quite a few other parsers in Go; I implemented my own because I wanted
-to. Some of the existing implementations also use regular expressions to parse
-the version and, according to my benchmarks in this repository, this
-implementation without regexps is a lot faster.
+The `go-semver` package provides utilities and a parser to work with version
+numbers that adhere to [semantic versioning](https://semver.org). It is designed
+to be faster than the common alternatives: the package implements custom parser
+instead of using regular expressions, which seems to be a lot faster.
 
 ## Install
 
