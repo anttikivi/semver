@@ -2,7 +2,6 @@ package semver
 
 import (
 	"fmt"
-	"strings"
 )
 
 // Values for number mode.
@@ -159,21 +158,19 @@ func isStartValid(ver string) (bool, int) {
 		return false, 0
 	}
 
-	pos := strings.IndexFunc(ver, func(r rune) bool { return '0' <= r && r <= '9' })
-	if pos == -1 {
-		// The version does not contain digits so it cannot be valid.
+	pos := 0
+
+	b := ver[0]
+	if (b < '0' || '9' < b) && b != 'v' {
 		return false, pos
 	}
 
-	// The first number was found at position other than the first so
-	// the version string has a prefix. We need to check if it is one of
-	// the valid prefixes.
-	if pos != 0 {
-		// TODO: This is unnecessary.
-		prefix := ver[:pos]
-		if prefix != "v" {
-			return false, pos
-		}
+	if b == 'v' {
+		pos++
+	}
+
+	if pos == len(ver) {
+		return false, pos
 	}
 
 	return true, pos
