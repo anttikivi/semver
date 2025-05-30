@@ -94,14 +94,38 @@ func (v *Version) String() string {
 	var sb strings.Builder
 
 	sb.WriteString(strconv.Itoa(v.Major))
-	sb.WriteString(".")
+	sb.WriteByte('.')
 	sb.WriteString(strconv.Itoa(v.Minor))
-	sb.WriteString(".")
+	sb.WriteByte('.')
 	sb.WriteString(strconv.Itoa(v.Patch))
 
 	if len(v.Prerelease.identifiers) > 0 {
-		sb.WriteString("-")
+		sb.WriteByte('-')
 		sb.WriteString(v.Prerelease.String())
+	}
+
+	return sb.String()
+}
+
+// FullString returns the full string representation of the version including
+// the build metadata.
+func (v *Version) FullString() string {
+	var sb strings.Builder
+
+	sb.WriteString(strconv.Itoa(v.Major))
+	sb.WriteByte('.')
+	sb.WriteString(strconv.Itoa(v.Minor))
+	sb.WriteByte('.')
+	sb.WriteString(strconv.Itoa(v.Patch))
+
+	if len(v.Prerelease.identifiers) > 0 {
+		sb.WriteByte('-')
+		sb.WriteString(v.Prerelease.String())
+	}
+
+	if len(v.Build) > 0 {
+		sb.WriteByte('+')
+		sb.WriteString(v.Build.String())
 	}
 
 	return sb.String()
@@ -115,8 +139,26 @@ func NewBuildIdentifiers(s ...string) BuildIdentifiers {
 	return b
 }
 
-func (i BuildIdentifiers) equal(o BuildIdentifiers) bool {
-	return slices.Equal(i, o)
+// String returns the string representation of the BuildIdentifiers b.
+func (b BuildIdentifiers) String() string {
+	var sb strings.Builder
+
+	if len(b) > 0 {
+		for _, s := range b {
+			sb.WriteString(s)
+			sb.WriteRune('.')
+		}
+	} else {
+		return ""
+	}
+
+	s := sb.String()
+
+	return s[:len(s)-1]
+}
+
+func (b BuildIdentifiers) equal(o BuildIdentifiers) bool {
+	return slices.Equal(b, o)
 }
 
 func parse(ver string, prefixes ...string) (*Version, error) {

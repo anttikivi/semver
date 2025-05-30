@@ -946,6 +946,288 @@ func TestVersionStringWithPrefix(t *testing.T) {
 	}
 }
 
+func TestVersionFullString(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		v    string
+		want string
+	}{
+		{"", ""},
+
+		{"0.1.0-alpha.24+sha.19031c2.darwin.amd64", "0.1.0-alpha.24+sha.19031c2.darwin.amd64"},
+		{"0.1.0-alpha.24+sha.19031c2-darwin-amd64", "0.1.0-alpha.24+sha.19031c2-darwin-amd64"},
+
+		{"bad", ""},
+		{"1-alpha.beta.gamma", ""},
+		{"1-pre", ""},
+		{"1+meta", ""},
+		{"1-pre+meta", ""},
+		{"1.2-pre", ""},
+		{"1.2+meta", ""},
+		{"1.2-pre+meta", ""},
+		{"1.0.0-alpha", "1.0.0-alpha"},
+		{"1.0.0-alpha.1", "1.0.0-alpha.1"},
+		{"1.0.0-alpha.beta", "1.0.0-alpha.beta"},
+		{"1.0.0-beta", "1.0.0-beta"},
+		{"1.0.0-beta.2", "1.0.0-beta.2"},
+		{"1.0.0-beta.11", "1.0.0-beta.11"},
+		{"1.0.0-rc.1", "1.0.0-rc.1"},
+		{"1", ""},
+		{"1.0", ""},
+		{"1.0.0", "1.0.0"},
+		{"1.2", ""},
+		{"1.2.0", "1.2.0"},
+		{"1.2.3-456", "1.2.3-456"},
+		{"1.2.3-456.789", "1.2.3-456.789"},
+		{"1.2.3-456-789", "1.2.3-456-789"},
+		{"1.2.3-456a", "1.2.3-456a"},
+		{"1.2.3-pre", "1.2.3-pre"},
+		{"1.2.3-pre+meta", "1.2.3-pre+meta"},
+		{"1.2.3-pre.1", "1.2.3-pre.1"},
+		{"1.2.3-zzz", "1.2.3-zzz"},
+		{"1.2.3", "1.2.3"},
+		{"1.2.3+meta", "1.2.3+meta"},
+		{"1.2.3+meta-pre", "1.2.3+meta-pre"},
+		{"1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
+		{"1.2.3-012a", "1.2.3-012a"},
+		{"1.2.3-0123", ""},
+
+		{"v", ""},
+		{"vbad", ""},
+		{"v1-alpha.beta.gamma", ""},
+		{"v1-pre", ""},
+		{"v1+meta", ""},
+		{"v1-pre+meta", ""},
+		{"v1.2-pre", ""},
+		{"v1.2+meta", ""},
+		{"v1.2-pre+meta", ""},
+		{"v1.0.0-alpha", "1.0.0-alpha"},
+		{"v1.0.0-alpha.1", "1.0.0-alpha.1"},
+		{"v1.0.0-alpha.beta", "1.0.0-alpha.beta"},
+		{"v1.0.0-beta", "1.0.0-beta"},
+		{"v1.0.0-beta.2", "1.0.0-beta.2"},
+		{"v1.0.0-beta.11", "1.0.0-beta.11"},
+		{"v1.0.0-rc.1", "1.0.0-rc.1"},
+		{"v1", ""},
+		{"v1.0", ""},
+		{"v1.0.0", "1.0.0"},
+		{"v1.2", ""},
+		{"v1.2.0", "1.2.0"},
+		{"v1.2.3-456", "1.2.3-456"},
+		{"v1.2.3-456.789", "1.2.3-456.789"},
+		{"v1.2.3-456-789", "1.2.3-456-789"},
+		{"v1.2.3-456a", "1.2.3-456a"},
+		{"v1.2.3-pre", "1.2.3-pre"},
+		{"v1.2.3-pre+meta", "1.2.3-pre+meta"},
+		{"v1.2.3-pre.1", "1.2.3-pre.1"},
+		{"v1.2.3-zzz", "1.2.3-zzz"},
+		{"v1.2.3", "1.2.3"},
+		{"v1.2.3+meta", "1.2.3+meta"},
+		{"v1.2.3+meta-pre", "1.2.3+meta-pre"},
+		{"v1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
+		{"v1.2.3-012a", "1.2.3-012a"},
+		{"v1.2.3-0123", ""},
+
+		{"semverbad", ""},
+		{"semver1-alpha.beta.gamma", ""},
+		{"semver1-pre", ""},
+		{"semver1+meta", ""},
+		{"semver1-pre+meta", ""},
+		{"semver1.2-pre", ""},
+		{"semver1.2+meta", ""},
+		{"semver1.2-pre+meta", ""},
+		{"semver1.0.0-alpha", ""},
+		{"semver1.0.0-alpha.1", ""},
+		{"semver1.0.0-alpha.beta", ""},
+		{"semver1.0.0-beta", ""},
+		{"semver1.0.0-beta.2", ""},
+		{"semver1.0.0-beta.11", ""},
+		{"semver1.0.0-rc.1", ""},
+		{"semver1", ""},
+		{"semver1.0", ""},
+		{"semver1.0.0", ""},
+		{"semver1.2", ""},
+		{"semver1.2.0", ""},
+		{"semver1.2.3-456", ""},
+		{"semver1.2.3-456.789", ""},
+		{"semver1.2.3-456-789", ""},
+		{"semver1.2.3-456a", ""},
+		{"semver1.2.3-pre", ""},
+		{"semver1.2.3-pre+meta", ""},
+		{"semver1.2.3-pre.1", ""},
+		{"semver1.2.3-zzz", ""},
+		{"semver1.2.3", ""},
+		{"semver1.2.3+meta", ""},
+		{"semver1.2.3+meta-pre", ""},
+		{"semver1.2.3+meta-pre.sha.256a", ""},
+		{"semver1.2.3-012a", ""},
+		{"semver1.2.3-0123", ""},
+	}
+	for _, tt := range tests {
+		name := tt.v
+		if name == "" {
+			name = emptyName
+		}
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, _ := semver.Parse(tt.v)
+			if tt.want == "" && got != nil {
+				t.Fatalf("Parse(%q) succeeded unexpectedly in the string test", tt.v)
+			}
+
+			if got != nil && got.FullString() != tt.want {
+				t.Errorf("Version{%q}.FullString() = %v, want %v", tt.v, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestVersionFullStringWithPrefix(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		v    string
+		want string
+	}{
+		{"", ""},
+
+		{"0.1.0-alpha.24+sha.19031c2.darwin.amd64", "0.1.0-alpha.24+sha.19031c2.darwin.amd64"},
+		{"0.1.0-alpha.24+sha.19031c2-darwin-amd64", "0.1.0-alpha.24+sha.19031c2-darwin-amd64"},
+
+		{"bad", ""},
+		{"1-alpha.beta.gamma", ""},
+		{"1-pre", ""},
+		{"1+meta", ""},
+		{"1-pre+meta", ""},
+		{"1.2-pre", ""},
+		{"1.2+meta", ""},
+		{"1.2-pre+meta", ""},
+		{"1.0.0-alpha", "1.0.0-alpha"},
+		{"1.0.0-alpha.1", "1.0.0-alpha.1"},
+		{"1.0.0-alpha.beta", "1.0.0-alpha.beta"},
+		{"1.0.0-beta", "1.0.0-beta"},
+		{"1.0.0-beta.2", "1.0.0-beta.2"},
+		{"1.0.0-beta.11", "1.0.0-beta.11"},
+		{"1.0.0-rc.1", "1.0.0-rc.1"},
+		{"1", ""},
+		{"1.0", ""},
+		{"1.0.0", "1.0.0"},
+		{"1.2", ""},
+		{"1.2.0", "1.2.0"},
+		{"1.2.3-456", "1.2.3-456"},
+		{"1.2.3-456.789", "1.2.3-456.789"},
+		{"1.2.3-456-789", "1.2.3-456-789"},
+		{"1.2.3-456a", "1.2.3-456a"},
+		{"1.2.3-pre", "1.2.3-pre"},
+		{"1.2.3-pre+meta", "1.2.3-pre+meta"},
+		{"1.2.3-pre.1", "1.2.3-pre.1"},
+		{"1.2.3-zzz", "1.2.3-zzz"},
+		{"1.2.3", "1.2.3"},
+		{"1.2.3+meta", "1.2.3+meta"},
+		{"1.2.3+meta-pre", "1.2.3+meta-pre"},
+		{"1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
+		{"1.2.3-012a", "1.2.3-012a"},
+		{"1.2.3-0123", ""},
+
+		{"v", ""},
+		{"vbad", ""},
+		{"v1-alpha.beta.gamma", ""},
+		{"v1-pre", ""},
+		{"v1+meta", ""},
+		{"v1-pre+meta", ""},
+		{"v1.2-pre", ""},
+		{"v1.2+meta", ""},
+		{"v1.2-pre+meta", ""},
+		{"v1.0.0-alpha", "1.0.0-alpha"},
+		{"v1.0.0-alpha.1", "1.0.0-alpha.1"},
+		{"v1.0.0-alpha.beta", "1.0.0-alpha.beta"},
+		{"v1.0.0-beta", "1.0.0-beta"},
+		{"v1.0.0-beta.2", "1.0.0-beta.2"},
+		{"v1.0.0-beta.11", "1.0.0-beta.11"},
+		{"v1.0.0-rc.1", "1.0.0-rc.1"},
+		{"v1", ""},
+		{"v1.0", ""},
+		{"v1.0.0", "1.0.0"},
+		{"v1.2", ""},
+		{"v1.2.0", "1.2.0"},
+		{"v1.2.3-456", "1.2.3-456"},
+		{"v1.2.3-456.789", "1.2.3-456.789"},
+		{"v1.2.3-456-789", "1.2.3-456-789"},
+		{"v1.2.3-456a", "1.2.3-456a"},
+		{"v1.2.3-pre", "1.2.3-pre"},
+		{"v1.2.3-pre+meta", "1.2.3-pre+meta"},
+		{"v1.2.3-pre.1", "1.2.3-pre.1"},
+		{"v1.2.3-zzz", "1.2.3-zzz"},
+		{"v1.2.3", "1.2.3"},
+		{"v1.2.3+meta", "1.2.3+meta"},
+		{"v1.2.3+meta-pre", "1.2.3+meta-pre"},
+		{"v1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
+		{"v1.2.3-012a", "1.2.3-012a"},
+		{"v1.2.3-0123", ""},
+
+		{"semverbad", ""},
+		{"semver1-alpha.beta.gamma", ""},
+		{"semver1-pre", ""},
+		{"semver1+meta", ""},
+		{"semver1-pre+meta", ""},
+		{"semver1.2-pre", ""},
+		{"semver1.2+meta", ""},
+		{"semver1.2-pre+meta", ""},
+		{"semver1.0.0-alpha", "1.0.0-alpha"},
+		{"semver1.0.0-alpha.1", "1.0.0-alpha.1"},
+		{"semver1.0.0-alpha.beta", "1.0.0-alpha.beta"},
+		{"semver1.0.0-beta", "1.0.0-beta"},
+		{"semver1.0.0-beta.2", "1.0.0-beta.2"},
+		{"semver1.0.0-beta.11", "1.0.0-beta.11"},
+		{"semver1.0.0-rc.1", "1.0.0-rc.1"},
+		{"semver1", ""},
+		{"semver1.0", ""},
+		{"semver1.0.0", "1.0.0"},
+		{"semver1.2", ""},
+		{"semver1.2.0", "1.2.0"},
+		{"semver1.2.3-456", "1.2.3-456"},
+		{"semver1.2.3-456.789", "1.2.3-456.789"},
+		{"semver1.2.3-456-789", "1.2.3-456-789"},
+		{"semver1.2.3-456a", "1.2.3-456a"},
+		{"semver1.2.3-pre", "1.2.3-pre"},
+		{"semver1.2.3-pre+meta", "1.2.3-pre+meta"},
+		{"semver1.2.3-pre.1", "1.2.3-pre.1"},
+		{"semver1.2.3-zzz", "1.2.3-zzz"},
+		{"semver1.2.3", "1.2.3"},
+		{"semver1.2.3+meta", "1.2.3+meta"},
+		{"semver1.2.3+meta-pre", "1.2.3+meta-pre"},
+		{"semver1.2.3+meta-pre.sha.256a", "1.2.3+meta-pre.sha.256a"},
+		{"semver1.2.3-012a", "1.2.3-012a"},
+		{"semver1.2.3-0123", ""},
+	}
+	for _, tt := range tests {
+		name := tt.v
+		if name == "" {
+			name = emptyName
+		}
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			got, _ := semver.ParsePrefix(tt.v, "semver")
+			if tt.want == "" && got != nil {
+				t.Fatalf(
+					"ParsePrefix(%q, %q) succeeded unexpectedly in the string test",
+					tt.v,
+					"semver",
+				)
+			}
+
+			if got != nil && got.FullString() != tt.want {
+				t.Errorf("ParsePrefix(%q, %q).FullString() = %v, want %v", tt.v, "semver", got, tt.want)
+			}
+		})
+	}
+}
+
 func BenchmarkParse(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
