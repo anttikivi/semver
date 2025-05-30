@@ -76,9 +76,22 @@ func MustParsePrefix(ver string, prefixes ...string) *Version {
 	return v
 }
 
-// Equal reports whether Version o is equal to v. The two Versions are equal if
-// all of their parts are; this includes the build metadata.
+// Equal reports whether Version o is equal to v. The two Versions are equal
+// according to this function if all of their parts that are comparable in
+// the semantic versioning specification are equal; this does not include
+// the build metadata.
 func (v *Version) Equal(o *Version) bool {
+	if o == nil {
+		return v == nil
+	}
+
+	return v.Major == o.Major && v.Minor == o.Minor && v.Patch == o.Patch &&
+		v.Prerelease.Equal(o.Prerelease)
+}
+
+// StrictEqual reports whether Version o is equal to v. The two Versions are
+// equal if all of their parts are; this includes the build metadata.
+func (v *Version) StrictEqual(o *Version) bool {
 	if o == nil {
 		return v == nil
 	}

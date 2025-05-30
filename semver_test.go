@@ -581,7 +581,7 @@ func TestMustParse(t *testing.T) {
 				}
 			}()
 
-			if got := semver.MustParse(tt.v); !tt.want.Equal(got) {
+			if got := semver.MustParse(tt.v); !tt.want.StrictEqual(got) {
 				t.Errorf("MustParse(%q) = %v, want %v", tt.v, got, tt.want)
 			}
 		})
@@ -606,7 +606,7 @@ func TestMustParsePrefix(t *testing.T) {
 				}
 			}()
 
-			if got := semver.MustParsePrefix(tt.v, "semver", "se"); !tt.want.Equal(got) {
+			if got := semver.MustParsePrefix(tt.v, "semver", "se"); !tt.want.StrictEqual(got) {
 				t.Errorf("MustParse(%q, %q, %q) = %v, want %v", tt.v, "semver", "se", got, tt.want)
 			}
 		})
@@ -634,7 +634,7 @@ func TestParse(t *testing.T) {
 				t.Errorf("Parse(%q) failed: %v", tt.v, gotErr)
 			}
 
-			if !tt.want.Equal(got) {
+			if !tt.want.StrictEqual(got) {
 				t.Errorf("Parse(%q) = %v, want %v", tt.v, got, tt.want)
 			}
 		})
@@ -662,7 +662,7 @@ func TestParsePrefix(t *testing.T) {
 				t.Errorf("Parse(%q, %q, %q) failed: %v", tt.v, "semver", "se", gotErr)
 			}
 
-			if !tt.want.Equal(got) {
+			if !tt.want.StrictEqual(got) {
 				t.Errorf("Parse(%q, %q, %q) = %v, want %v", tt.v, "semver", "se", got, tt.want)
 			}
 		})
