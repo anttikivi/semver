@@ -12,6 +12,11 @@ This project adheres to
 - `Version.FullString` function that returns the version as a string that
   includes the build metadata.
 
+### Fixed
+
+- Fix the version parser accepting any character after the patch version without
+  returning an error.
+
 ## [0.2.0] - 2025-01-01
 
 ### Added

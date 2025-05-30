@@ -208,6 +208,10 @@ func parse(ver string, prefixes ...string) (*Version, error) {
 
 	pos += countDigits(patch)
 
+	if pos < len(ver) && ver[pos] != '-' && ver[pos] != '+' {
+		return nil, fmt.Errorf("%w: invalid char %q at %d", ErrInvalidVersion, ver[pos], pos)
+	}
+
 	if pos < len(ver) && ver[pos] == '-' {
 		// The hyphen is not passed to the parser.
 		pos++

@@ -69,6 +69,11 @@ func TestIsValid(t *testing.T) {
 		{"0.1.0-alpha.24+sha.19031c2.darwin.amd64", true},
 		{"0.1.0-alpha.24+sha.19031c2-darwin-amd64", true},
 
+		{"1,2.3", false},
+		{"1.2.3,pre", false},
+		{"1.2.3-pre,hello", false},
+		{"1.2.3-pre.hello,", false},
+		{"1.2.3-pre.hello,wrong", false},
 		{"bad", false},
 		{"1-alpha.beta.gamma", false},
 		{"1-pre", false},

@@ -40,6 +40,11 @@ var (
 			false,
 		},
 
+		{"1,2.3", nil, true},
+		{"1.2.3,pre", nil, true},
+		{"1.2.3-pre,hello", nil, true},
+		{"1.2.3-pre.hello,", nil, true},
+		{"1.2.3-pre.hello,wrong", nil, true},
 		{"bad", nil, true},
 		{"1-alpha.beta.gamma", nil, true},
 		{"1-pre", nil, true},
