@@ -108,6 +108,9 @@ func TestIsValid(t *testing.T) {
 		{"1.2.3+meta-pre.sha.256a", true},
 		{"1.2.3-012a", true},
 		{"1.2.3-0123", false},
+		{"01.2.3", false},
+		{"1.02.3", false},
+		{"1.2.03", false},
 
 		{"v", false},
 		{"vbad", false},
@@ -144,6 +147,9 @@ func TestIsValid(t *testing.T) {
 		{"v1.2.3+meta-pre.sha.256a", true},
 		{"v1.2.3-012a", true},
 		{"v1.2.3-0123", false},
+		{"v01.2.3", false},
+		{"v1.02.3", false},
+		{"v1.2.03", false},
 
 		{"semver", false},
 		{"semverbad", false},
@@ -180,6 +186,9 @@ func TestIsValid(t *testing.T) {
 		{"semver1.2.3+meta-pre.sha.256a", false},
 		{"semver1.2.3-012a", false},
 		{"semver1.2.3-0123", false},
+		{"semver01.2.3", false},
+		{"semver1.02.3", false},
+		{"semver1.2.03", false},
 
 		{"sem", false},
 		{"sembad", false},
@@ -216,6 +225,9 @@ func TestIsValid(t *testing.T) {
 		{"sem1.2.3+meta-pre.sha.256a", false},
 		{"sem1.2.3-012a", false},
 		{"sem1.2.3-0123", false},
+		{"sem01.2.3", false},
+		{"sem1.02.3", false},
+		{"sem1.2.03", false},
 
 		{"se", false},
 		{"sebad", false},
@@ -252,6 +264,9 @@ func TestIsValid(t *testing.T) {
 		{"se1.2.3+meta-pre.sha.256a", false},
 		{"se1.2.3-012a", false},
 		{"se1.2.3-0123", false},
+		{"se01.2.3", false},
+		{"se1.02.3", false},
+		{"se1.2.03", false},
 	}
 	for _, tt := range tests {
 		name := tt.v
@@ -315,6 +330,9 @@ func TestIsValidPrefix(t *testing.T) {
 		{"1.2.3+meta-pre.sha.256a", true},
 		{"1.2.3-012a", true},
 		{"1.2.3-0123", false},
+		{"01.2.3", false},
+		{"1.02.3", false},
+		{"1.2.03", false},
 
 		{"vbad", false},
 		{"v1-alpha.beta.gamma", false},
@@ -350,6 +368,9 @@ func TestIsValidPrefix(t *testing.T) {
 		{"v1.2.3+meta-pre.sha.256a", true},
 		{"v1.2.3-012a", true},
 		{"v1.2.3-0123", false},
+		{"v01.2.3", false},
+		{"v1.02.3", false},
+		{"v1.2.03", false},
 
 		{"semverbad", false},
 		{"semver1-alpha.beta.gamma", false},
@@ -385,6 +406,9 @@ func TestIsValidPrefix(t *testing.T) {
 		{"semver1.2.3+meta-pre.sha.256a", true},
 		{"semver1.2.3-012a", true},
 		{"semver1.2.3-0123", false},
+		{"semver01.2.3", false},
+		{"semver1.02.3", false},
+		{"semver1.2.03", false},
 
 		{"sembad", false},
 		{"sem1-alpha.beta.gamma", false},
@@ -420,6 +444,9 @@ func TestIsValidPrefix(t *testing.T) {
 		{"sem1.2.3+meta-pre.sha.256a", false},
 		{"sem1.2.3-012a", false},
 		{"sem1.2.3-0123", false},
+		{"sem01.2.3", false},
+		{"sem1.02.3", false},
+		{"sem1.2.03", false},
 
 		{"sebad", false},
 		{"se1-alpha.beta.gamma", false},
@@ -455,6 +482,9 @@ func TestIsValidPrefix(t *testing.T) {
 		{"se1.2.3+meta-pre.sha.256a", true},
 		{"se1.2.3-012a", true},
 		{"se1.2.3-0123", false},
+		{"se01.2.3", false},
+		{"se1.02.3", false},
+		{"se1.2.03", false},
 	}
 	for _, tt := range tests {
 		name := tt.v

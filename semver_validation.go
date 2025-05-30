@@ -38,8 +38,6 @@ func isValid(ver string, prefixes ...string) bool {
 		}
 	}
 
-	length := len(ver)
-
 	// Check the major and minor number.
 	// Both of them should start at the next position and end in a dot so we can
 	// just repeat this loop twice.
@@ -48,18 +46,18 @@ func isValid(ver string, prefixes ...string) bool {
 		zero := ver[pos] == '0'
 
 		// Check that every number before the next dot is a digit.
-		for ; pos < length && ver[pos] != '.'; pos++ {
+		for ; pos < len(ver) && ver[pos] != '.'; pos++ {
 			if ver[pos] < '0' || ver[pos] > '9' {
 				return false
 			}
 		}
 
-		if pos-start < 1 && zero {
+		if pos-start > 1 && zero {
 			return false
 		}
 
 		// We cannot be at the end yet.
-		if pos >= length {
+		if pos >= len(ver) {
 			return false
 		}
 
@@ -76,65 +74,47 @@ func isValid(ver string, prefixes ...string) bool {
 	zero := ver[pos] == '0'
 
 	// Check that every number before the next dot is a digit.
-	for ; pos < length && ver[pos] != '-' && ver[pos] != '+'; pos++ {
+	for ; pos < len(ver) && ver[pos] != '-' && ver[pos] != '+'; pos++ {
 		if ver[pos] < '0' || ver[pos] > '9' {
 			return false
 		}
 	}
 
-	if pos-start < 1 && zero {
+	if pos-start > 1 && zero {
 		return false
 	}
 
 	// If the major, minor, and patch were checked successfully and we are at
 	// the end, the version is valid.
-	if pos >= length {
+	if pos >= len(ver) {
 		return true
 	}
 
 	// Check the pre-release identifiers.
-	if ver[pos] == '-' { //nolint:nestif // not too complex
-		// Skip the hyphen.
+	if ver[pos] == '-' {
 		pos++
 
-		num := true
-		zero = false
-		currentLen := 0
+		var ok bool
+		if ok, pos = isPrereleaseValid(ver, pos); !ok {
+			return false
+		}
+	}
 
-		for ; pos < length && ver[pos] != '+'; pos++ {
-			b := ver[pos]
-			// If the character is a dot, start a new identifier.
-			if b == '.' {
-				// If the identifier with a leading zero is a number longer than
-				// one character, the version is invalid.
-				if zero && num && currentLen > 1 {
-					return false
-				}
+	if pos >= len(ver) {
+		return true
+	}
 
-				num = true
-				zero = false
-				currentLen = 0
-				pos++
-				// Empty identifier is invalid.
-				if b = ver[pos]; b == '+' || pos >= length {
-					return false
-				}
-			}
+	if ver[pos] == '+' {
+		pos++
 
-			if b == '0' && currentLen == 0 {
-				zero = true
-			}
+		if ok := isBuildMetadataValid(ver, pos); !ok {
+			return false
+		}
+	}
 
-			// If the identifier is still a number but we encounter a non-digit
-			// character, the identifier is no longer a number.
-			if num && ('A' <= b && b <= 'Z') || ('a' <= b && b <= 'z') || b == '-' {
-				num = false
-			}
+	return true
+}
 
-			// Otherwise just check that the character is valid.
-			if ('A' > b || b > 'Z') && ('a' > b || b > 'z') && ('0' > b || b > '9') && b != '-' {
-				return false
-			}
 
 			currentLen++
 		}
@@ -161,7 +141,68 @@ func isValid(ver string, prefixes ...string) bool {
 			if ('A' > b || b > 'Z') && ('a' > b || b > 'z') && ('0' > b || b > '9') && b != '-' &&
 				b != '.' {
 				return false
+func isPrereleaseValid(ver string, pos int) (bool, int) {
+	num := true
+	zero := false
+	currentLen := 0
+
+	for ; pos < len(ver) && ver[pos] != '+'; pos++ {
+		b := ver[pos]
+		// If the character is a dot, start a new identifier.
+		if b == '.' {
+			// If the identifier with a leading zero is a number longer than
+			// one character, the version is invalid.
+			if zero && num && currentLen > 1 {
+				return false, pos
 			}
+
+			num = true
+			zero = false
+			currentLen = 0
+			pos++
+			// Empty identifier is invalid.
+			if b = ver[pos]; b == '+' || pos >= len(ver) {
+				return false, pos
+			}
+		}
+
+		if b == '0' && currentLen == 0 {
+			zero = true
+		}
+
+		// If the identifier is still a number but we encounter a non-digit
+		// character, the identifier is no longer a number.
+		if num && ('A' <= b && b <= 'Z') || ('a' <= b && b <= 'z') || b == '-' {
+			num = false
+		}
+
+		// Otherwise just check that the character is valid.
+		if ('A' > b || b > 'Z') && ('a' > b || b > 'z') && ('0' > b || b > '9') && b != '-' {
+			return false, pos
+		}
+
+		currentLen++
+	}
+
+	// If the identifier with a leading zero is a number longer than
+	// one character, the version is invalid.
+	if zero && num && currentLen > 1 {
+		return false, pos
+	}
+
+	if currentLen == 0 {
+		return false, pos
+	}
+
+	return true, pos
+}
+
+func isBuildMetadataValid(ver string, pos int) bool {
+	for ; pos < len(ver); pos++ {
+		b := ver[pos]
+		if ('A' > b || b > 'Z') && ('a' > b || b > 'z') && ('0' > b || b > '9') && b != '-' &&
+			b != '.' {
+			return false
 		}
 	}
 
