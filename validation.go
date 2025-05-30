@@ -19,17 +19,6 @@ type numberMode int
 // IsValid reports whether s is a valid semantic version string. The version may
 // have a 'v' prefix.
 func IsValid(ver string) bool {
-	return isValid(ver)
-}
-
-// IsValidPartial reports whether s is a valid semantic version string even if
-// it is only a partial version. In other words, this function reads `v1` and
-// `v1.2` as valid versions. The version may have a 'v' prefix.
-func IsValidPartial(ver string) bool {
-	return isValidPartial(ver)
-}
-
-func isValid(ver string) bool {
 	ok, pos := isStartValid(ver)
 	if !ok {
 		return false
@@ -91,7 +80,10 @@ func isValid(ver string) bool {
 	return true
 }
 
-func isValidPartial(ver string) bool {
+// IsValidLax reports whether s is a valid semantic version string even if it is
+// only a partial version. In other words, this function reads `v1` and `v1.2`
+// as valid versions. The version may have a 'v' prefix.
+func IsValidLax(ver string) bool {
 	ok, pos := isStartValid(ver)
 	if !ok {
 		return false

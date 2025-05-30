@@ -13,7 +13,7 @@ This project adheres to
   includes the build metadata.
 - `Version.StrictEqual` function that compares the whole version data to
   determine the equality of two versions, including build metadata.
-- `IsValidPartial` for checking if partial version strings are valid.
+- `IsValidLax` for checking if partial version strings are valid.
 
 ### Changed
 
@@ -31,8 +31,7 @@ This project adheres to
 
 - Fix the version parser accepting any character after the patch version without
   returning an error.
-- Fix `IsValid` and `IsValidPrefix` accepting version strings that had leading
-  zero.
+- Fix `IsValid` accepting version strings that had leading zero.
 
 ## [0.2.0] - 2025-01-01
 

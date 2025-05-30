@@ -198,7 +198,7 @@ func TestIsValid(t *testing.T) {
 	}
 }
 
-func TestIsValidPartial(t *testing.T) {
+func TestIsValidLax(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -349,8 +349,8 @@ func TestIsValidPartial(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			if ok := semver.IsValidPartial(tt.v); ok != tt.want {
-				t.Errorf("IsValidPartial(%q) = %v, want %v", tt.v, ok, !ok)
+			if ok := semver.IsValidLax(tt.v); ok != tt.want {
+				t.Errorf("IsValidLax(%q) = %v, want %v", tt.v, ok, !ok)
 			}
 		})
 	}
