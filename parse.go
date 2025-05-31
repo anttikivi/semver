@@ -12,95 +12,19 @@ import (
 // they encounter invalid version string.
 var ErrInvalidVersion = errors.New("invalid semantic version")
 
+// ErrUnknown is returned when there is a problem with the parsing that is not
+// directly related to the caller giving an invalid string.
+var ErrUnknown = errors.New("parsing failed")
+
 // Parse parses the given string into a Version. The version string may have
 // a 'v' prefix.
 func Parse(ver string) (*Version, error) {
-	if ver == "" {
-		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
-	}
-
-	if !isASCII(ver) {
-		return nil, fmt.Errorf("%w: version contains non-ASCII characters", ErrInvalidVersion)
-	}
-
-	pos, err := parsePrefix(ver)
+	v, err := parse(ver, 3)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse the version prefix: %w", err)
+		return nil, fmt.Errorf("failed to parse version: %w", err)
 	}
 
-	major, err := parseNext(ver[pos:])
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse the major version: %w", err)
-	}
-
-	pos += countDigits(major)
-	if pos >= len(ver) || ver[pos] != '.' {
-		return nil, fmt.Errorf("no dot after the major version: %w", ErrInvalidVersion)
-	}
-
-	pos++
-
-	minor, err := parseNext(ver[pos:])
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse the minor version: %w", err)
-	}
-
-	pos += countDigits(minor)
-	if pos >= len(ver) || ver[pos] != '.' {
-		return nil, fmt.Errorf("no dot after the minor version: %w", ErrInvalidVersion)
-	}
-
-	pos++
-
-	patch, err := parseNext(ver[pos:])
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse the patch version: %w", err)
-	}
-
-	pos += countDigits(patch)
-
-	if pos < len(ver) && ver[pos] != '-' && ver[pos] != '+' {
-		return nil, fmt.Errorf("%w: invalid char %q at %d", ErrInvalidVersion, ver[pos], pos)
-	}
-
-	var prereleaseIdentifiers []prereleaseIdentifier
-
-	if pos < len(ver) && ver[pos] == '-' {
-		// The hyphen is not passed to the parser.
-		pos++
-
-		prereleaseIdentifiers, err = parsePrereleaseIdentifiers(ver[pos:])
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse the pre-release identifiers: %w", err)
-		}
-
-		// Move the position by the number of dots in the pre-release.
-		pos += len(prereleaseIdentifiers) - 1
-
-		for _, v := range prereleaseIdentifiers {
-			pos += v.Len()
-		}
-	}
-
-	var build BuildIdentifiers
-
-	if pos < len(ver) && ver[pos] == '+' {
-		// Move past the '+'.
-		pos++
-
-		build, err = parseBuild(ver[pos:])
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse the build identifiers: %w", err)
-		}
-	}
-
-	return &Version{
-		Major:      major,
-		Minor:      minor,
-		Patch:      patch,
-		Prerelease: Prerelease(prereleaseIdentifiers),
-		Build:      build,
-	}, nil
+	return v, nil
 }
 
 // MustParse parses the given string into a Version and panics if it encounters
@@ -117,124 +41,13 @@ func MustParse(ver string) *Version {
 // ParseLax parses the given string into a Version. The version number may be
 // partial, i.e. it parses 'v1' into '1.0.0' and 'v1.2' into '1.2.0'.
 // The version string may have a 'v' prefix.
-func ParseLax(ver string) (*Version, error) { //nolint:cyclop,funlen // no problem here
-	if ver == "" {
-		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
-	}
-
-	if !isASCII(ver) {
-		return nil, fmt.Errorf("%w: version contains non-ASCII characters", ErrInvalidVersion)
-	}
-
-	pos, err := parsePrefix(ver)
+func ParseLax(ver string) (*Version, error) {
+	v, err := parse(ver, 0)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse the version prefix: %w", err)
+		return nil, fmt.Errorf("failed to parse version: %w", err)
 	}
 
-	major, err := parseNext(ver[pos:])
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse the major version: %w", err)
-	}
-
-	pos += countDigits(major)
-	if pos >= len(ver) {
-		return &Version{
-			Major:      major,
-			Minor:      0,
-			Patch:      0,
-			Prerelease: Prerelease{},
-			Build:      BuildIdentifiers{},
-		}, nil
-	}
-
-	minor := uint64(0)
-
-	// Parse the minor version only if the next character is a dot.
-	if ver[pos] == '.' {
-		pos++
-
-		minor, err = parseNext(ver[pos:])
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse the minor version: %w", err)
-		}
-
-		pos += countDigits(minor)
-		if pos >= len(ver) {
-			return &Version{
-				Major:      major,
-				Minor:      minor,
-				Patch:      0,
-				Prerelease: Prerelease{},
-				Build:      BuildIdentifiers{},
-			}, nil
-		}
-	}
-
-	patch := uint64(0)
-
-	// Parse the patch version only if the next character is a dot.
-	if ver[pos] == '.' {
-		pos++
-
-		patch, err = parseNext(ver[pos:])
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse the patch version: %w", err)
-		}
-
-		pos += countDigits(minor)
-		if pos >= len(ver) {
-			return &Version{
-				Major:      major,
-				Minor:      minor,
-				Patch:      patch,
-				Prerelease: Prerelease{},
-				Build:      BuildIdentifiers{},
-			}, nil
-		}
-	}
-
-	if pos < len(ver) && ver[pos] != '-' && ver[pos] != '+' {
-		return nil, fmt.Errorf("%w: invalid char %q at %d", ErrInvalidVersion, ver[pos], pos)
-	}
-
-	var prereleaseIdentifiers []prereleaseIdentifier
-
-	if pos < len(ver) && ver[pos] == '-' {
-		// The hyphen is not passed to the parser.
-		pos++
-
-		prereleaseIdentifiers, err = parsePrereleaseIdentifiers(ver[pos:])
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse the pre-release identifiers: %w", err)
-		}
-
-		// Move the position by the number of dots in the pre-release.
-		pos += len(prereleaseIdentifiers) - 1
-
-		for _, v := range prereleaseIdentifiers {
-			pos += v.Len()
-		}
-	}
-
-	var build BuildIdentifiers
-
-	if pos < len(ver) && ver[pos] == '+' {
-		// Move past the '+'.
-		pos++
-
-		build, err = parseBuild(ver[pos:])
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse the build identifiers: %w", err)
-		}
-	}
-
-	return &Version{
-		Major:      major,
-		Minor:      minor,
-		Patch:      patch,
-		Prerelease: Prerelease(prereleaseIdentifiers),
-		Build:      build,
-	}, nil
+	return v, nil
 }
 
 // MustParseLax parses the given string into a Version and panics if it
@@ -257,6 +70,31 @@ func NewBuildIdentifiers(s ...string) BuildIdentifiers {
 	return b
 }
 
+// checkPrefix parses the possible "v" prefix for the version string.
+// The function returns the new position where the parsing continues.
+func checkPrefix(s string) (int, error) {
+	pos := 0
+
+	c := s[0]
+	if !isDigit(c) && c != 'v' {
+		return pos, fmt.Errorf(
+			"%w: version %q does not start with a digit or 'v'",
+			ErrInvalidVersion,
+			s,
+		)
+	}
+
+	if c == 'v' {
+		pos++
+	}
+
+	if pos == len(s) {
+		return pos, fmt.Errorf("%w: %q", ErrInvalidVersion, s)
+	}
+
+	return pos, nil
+}
+
 func countDigits(i uint64) int {
 	if i == 0 {
 		return 1
@@ -272,8 +110,14 @@ func countDigits(i uint64) int {
 	return count
 }
 
-func isAlphanumericIdentifier(b byte) bool {
-	return ('A' <= b && b <= 'Z') || ('a' <= b && b <= 'z') || ('0' <= b && b <= '9') || b == '-'
+func isAlphanumericIdentifier(s string) bool {
+	for i := range len(s) {
+		if !isIdentifierCharacter(s[i]) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func isASCII(s string) bool {
@@ -286,8 +130,153 @@ func isASCII(s string) bool {
 	return true
 }
 
+func isDigit(c byte) bool {
+	return '0' <= c && c <= '9'
+}
+
+func isIdentifierCharacter(c byte) bool {
+	return ('0' <= c && c <= '9') || ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '-'
+}
+
+func isNumericIdentifier(s string) bool {
+	for i := range len(s) {
+		if !isDigit(s[i]) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func isPrereleaseSeparator(b byte) bool {
 	return b == '.' || b == '+'
+}
+
+func parse(ver string, minCore int) (*Version, error) {
+	if ver == "" {
+		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
+	}
+
+	if !isASCII(ver) {
+		return nil, fmt.Errorf("%w: version contains non-ASCII characters", ErrInvalidVersion)
+	}
+
+	pos, err := checkPrefix(ver)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse the version prefix: %w", err)
+	}
+
+	i := len(ver)
+
+	for j := range ver[pos:] {
+		c := ver[pos+j]
+		if !isDigit(c) && c != '.' {
+			i = pos + j
+
+			break
+		}
+	}
+
+	nums := strings.Split(ver[pos:i], ".")
+
+	if len(nums) > 3 {
+		return nil, fmt.Errorf("%w: too many core version numbers in %q", ErrInvalidVersion, ver)
+	}
+
+	if len(nums) < minCore {
+		return nil, fmt.Errorf("%w: not enough core version numbers in %q", ErrInvalidVersion, ver)
+	}
+
+	major := uint64(0)
+	minor := uint64(0)
+	patch := uint64(0)
+
+	for j, n := range nums {
+		if n == "" {
+			return nil, fmt.Errorf("%w: empty version number in %q", ErrInvalidVersion, ver)
+		}
+
+		if !isNumericIdentifier(n) {
+			return nil, fmt.Errorf("%w: version number %q is not a number", ErrInvalidVersion, n)
+		}
+
+		// If the number is only a zero, we already have the correct value and
+		// can move on to the next one.
+		if n == "0" {
+			continue
+		}
+
+		if n[0] == '0' {
+			return nil, fmt.Errorf("%w: leading zero in %q", ErrInvalidVersion, n)
+		}
+
+		u, err := strconv.ParseUint(n, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert the string %q to uint64: %w", n, err)
+		}
+
+		switch j {
+		case 0:
+			major = u
+		case 1:
+			minor = u
+		case 2:
+			patch = u
+		default:
+			return nil, fmt.Errorf("%w: index when checking version number is out of bounds: %d", ErrUnknown, j)
+		}
+	}
+
+	pos = i
+
+	if pos < len(ver) && ver[pos] != '-' && ver[pos] != '+' {
+		return nil, fmt.Errorf("%w: invalid char %q at %d", ErrInvalidVersion, ver[pos], pos)
+	}
+
+	var prerelease Prerelease
+
+	if pos < len(ver) && ver[pos] == '-' {
+		// The hyphen is not passed to the parser.
+		pos++
+
+		i = len(ver)
+
+		for j := range ver[pos:] {
+			c := ver[pos+j]
+			if c == '+' {
+				i = pos + j
+
+				break
+			}
+		}
+
+		prerelease, err = ParsePrerelease(ver[pos:i])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse the pre-release: %w", err)
+		}
+
+		pos = i
+	}
+
+	var build BuildIdentifiers
+
+	if pos < len(ver) && ver[pos] == '+' {
+		// Move past the '+'.
+		pos++
+
+		build, err = parseBuild(ver[pos:])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse the build identifiers: %w", err)
+		}
+	}
+
+	return &Version{
+		Major:      major,
+		Minor:      minor,
+		Patch:      patch,
+		Prerelease: prerelease,
+		Build:      build,
+	}, nil
 }
 
 func parseBuild(s string) ([]string, error) {
@@ -308,7 +297,7 @@ func parseBuild(s string) ([]string, error) {
 		// ASCII.
 		if strings.ContainsFunc(
 			v,
-			func(r rune) bool { return !isAlphanumericIdentifier(byte(r)) },
+			func(r rune) bool { return !isIdentifierCharacter(byte(r)) },
 		) {
 			return nil, fmt.Errorf(
 				"invalid rune in the build identifier %q: %w",
@@ -350,103 +339,4 @@ func parseNext(s string) (uint64, error) {
 	}
 
 	return u, nil
-}
-
-// parsePrefix parses the possible "v" prefix for the version string.
-// The function returns the new position where the parsing continues.
-func parsePrefix(s string) (int, error) {
-	if s == "" {
-		return 0, fmt.Errorf("empty string: %w", ErrInvalidVersion)
-	}
-
-	pos := 0
-
-	b := s[0]
-	if (b < '0' || '9' < b) && b != 'v' {
-		return pos, fmt.Errorf(
-			"%w: version %q does not start with a digit or 'v'",
-			ErrInvalidVersion,
-			s,
-		)
-	}
-
-	if b == 'v' {
-		pos++
-	}
-
-	if pos == len(s) {
-		return pos, fmt.Errorf("%w: %q", ErrInvalidVersion, s)
-	}
-
-	return pos, nil
-}
-
-func parsePrereleaseIdentifiers(s string) ([]prereleaseIdentifier, error) {
-	if s == "" {
-		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
-	}
-
-	var builder strings.Builder
-
-	resultLen := strings.Count(s, ".") + 1
-	if i := strings.IndexRune(s, '+'); i != -1 {
-		resultLen -= strings.Count(s[i:], ".")
-	}
-
-	result := make([]prereleaseIdentifier, resultLen)
-
-	i := 0
-
-	for j := range len(s) {
-		char := s[j]
-		if !isPrereleaseSeparator(char) {
-			builder.WriteByte(char)
-		}
-
-		if isPrereleaseSeparator(char) || j == len(s)-1 {
-			current := builder.String()
-
-			isAlphanum := strings.ContainsFunc(
-				current,
-				func(r rune) bool { return !unicode.IsDigit(r) },
-			)
-
-			switch {
-			case isAlphanum:
-				result[i] = alphanumericIdentifier{current}
-			case current == "0":
-				result[i] = numericIdentifier{0}
-			case current[0] != '0':
-				num, err := strconv.ParseUint(current, 10, 64)
-				if err != nil {
-					return nil, fmt.Errorf(
-						"failed to convert pre-release identifier to integer: %w",
-						err,
-					)
-				}
-
-				result[i] = numericIdentifier{num}
-			default:
-				return nil, fmt.Errorf(
-					"invalid pre-release identifier %q: %w",
-					current,
-					ErrInvalidVersion,
-				)
-			}
-
-			i++
-
-			if char == '+' {
-				break
-			}
-
-			builder.Reset()
-		}
-
-		if !isAlphanumericIdentifier(char) && char != '.' {
-			return nil, fmt.Errorf("invalid pre-release identifier %q: %w", char, ErrInvalidVersion)
-		}
-	}
-
-	return result, nil
 }

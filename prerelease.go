@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var errInvalidPrereleaseIndent = errors.New("invalid pre-release identifier")
+var errInvalidPrereleaseIdent = errors.New("invalid pre-release identifier")
 
 // A Prerelease holds the pre-release identifiers of a version.
 type Prerelease []PrereleaseIdentifier
@@ -57,26 +57,47 @@ type alphanumericIdentifier struct {
 // NewPrerelease creates new [Prerelease] from the given elements. The elements
 // must be strings or ints.
 func NewPrerelease(a ...any) (Prerelease, error) {
-	identifiers := make(Prerelease, 0)
+	identifiers := make(Prerelease, 0, len(a))
 
 	for _, v := range a {
 		switch u := v.(type) {
 		case int:
 			if u < 0 {
-				return Prerelease{}, fmt.Errorf("%w: %v", errInvalidPrereleaseIndent, v)
+				return nil, fmt.Errorf("%w: %v", errInvalidPrereleaseIdent, v)
 			}
 
 			identifiers = append(identifiers, numericIdentifier{uint64(u)})
 		case uint64:
 			identifiers = append(identifiers, numericIdentifier{u})
 		case string:
-			identifiers = append(identifiers, alphanumericIdentifier{u})
+			p, err := parsePrereleaseIdentifier(u)
+			if err != nil {
+				return nil, fmt.Errorf("cannot create Prerelease: %w", err)
+			}
+
+			identifiers = append(identifiers, p)
 		default:
-			return Prerelease{}, fmt.Errorf("%w: %v", errInvalidPrereleaseIndent, v)
+			return nil, fmt.Errorf("%w: %v", errInvalidPrereleaseIdent, v)
 		}
 	}
 
-	return Prerelease(identifiers), nil
+	return identifiers, nil
+}
+
+func ParsePrerelease(s string) (Prerelease, error) {
+	parts := strings.Split(s, ".")
+	prerelease := make(Prerelease, 0, len(parts))
+
+	for _, v := range parts {
+		p, err := parsePrereleaseIdentifier(v)
+		if err != nil {
+			return nil, fmt.Errorf("parsing prerelease %q failed: %w", s, err)
+		}
+
+		prerelease = append(prerelease, p)
+	}
+
+	return prerelease, nil
 }
 
 // Compare returns
@@ -302,4 +323,43 @@ func comparePrereleaseIdentifiers(x PrereleaseIdentifier, y PrereleaseIdentifier
 	}
 
 	return x.Compare(y)
+}
+
+func parsePrereleaseIdentifier(s string) (PrereleaseIdentifier, error) {
+	if s == "" {
+		return nil, fmt.Errorf("%w: identifier is an empty string", errInvalidPrereleaseIdent)
+	}
+
+	if !isASCII(s) {
+		return nil, fmt.Errorf("%w: identifier %q contains non-ASCII characters", errInvalidPrereleaseIdent, s)
+	}
+
+	// Check the case for single zero early.
+	if s == "0" {
+		return numericIdentifier{0}, nil
+	}
+
+	switch {
+	case isNumericIdentifier(s):
+		// If this is a numeric identifier and the first character is zero, we
+		// already know that the length is greater than 1 as the case for that
+		// was checked at the start.
+		if s[0] == '0' {
+			return nil, fmt.Errorf("%w: numeric identifier with a leading zero: %s", errInvalidPrereleaseIdent, s)
+		}
+
+		u, err := strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"failed to convert pre-release identifier to integer: %w",
+				err,
+			)
+		}
+
+		return numericIdentifier{u}, nil
+	case isAlphanumericIdentifier(s):
+		return alphanumericIdentifier{s}, nil
+	default:
+		return nil, fmt.Errorf("%w: %s", errInvalidPrereleaseIdent, s)
+	}
 }
