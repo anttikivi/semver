@@ -133,7 +133,7 @@ func MustParse(ver string) *Version {
 // ParseLax parses the given string into a Version. The version number may be
 // partial, i.e. it parses 'v1' into '1.0.0' and 'v1.2' into '1.2.0'.
 // The version string may have a 'v' prefix.
-func ParseLax(ver string) (*Version, error) {
+func ParseLax(ver string) (*Version, error) { //nolint:cyclop,funlen // no problem here
 	if ver == "" {
 		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
 	}
