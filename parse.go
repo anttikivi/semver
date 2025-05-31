@@ -19,6 +19,10 @@ func Parse(ver string) (*Version, error) {
 		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
 	}
 
+	if !isASCII(ver) {
+		return nil, fmt.Errorf("%w: version contains non-ASCII characters", ErrInvalidVersion)
+	}
+
 	pos, err := parsePrefix(ver)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the version prefix: %w", err)
@@ -116,6 +120,10 @@ func MustParse(ver string) *Version {
 func ParseLax(ver string) (*Version, error) { //nolint:cyclop,funlen // no problem here
 	if ver == "" {
 		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
+	}
+
+	if !isASCII(ver) {
+		return nil, fmt.Errorf("%w: version contains non-ASCII characters", ErrInvalidVersion)
 	}
 
 	pos, err := parsePrefix(ver)
@@ -266,6 +274,16 @@ func countDigits(i uint64) int {
 
 func isAlphanumericIdentifier(b byte) bool {
 	return ('A' <= b && b <= 'Z') || ('a' <= b && b <= 'z') || ('0' <= b && b <= '9') || b == '-'
+}
+
+func isASCII(s string) bool {
+	for i := range len(s) {
+		if s[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+
+	return true
 }
 
 func isPrereleaseSeparator(b byte) bool {
