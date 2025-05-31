@@ -520,7 +520,7 @@ func (i numericIdentifier) Value() any {
 //	+1 if v is greater than w.
 //
 // The comparison is done according to the semantic versioning specification.
-func Compare(v *Version, w *Version) int {
+func Compare(v, w *Version) int {
 	return v.Compare(w)
 }
 
