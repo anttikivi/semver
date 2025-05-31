@@ -429,32 +429,6 @@ func init() {
 	}
 }
 
-func TestVersionString(t *testing.T) {
-	t.Parallel()
-
-	for _, tt := range stringerTests {
-		name := tt.v
-		if name == "" {
-			name = emptyName
-		}
-
-		v, _ := semver.Parse(tt.v)
-
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			if v == nil {
-				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
-			}
-
-			got := v.String()
-			if got != tt.want {
-				t.Errorf("Version{%q}.String() = %v, want %v", tt.v, got, tt.want)
-			}
-		})
-	}
-}
-
 func TestVersionCore(t *testing.T) {
 	t.Parallel()
 
@@ -481,32 +455,6 @@ func TestVersionCore(t *testing.T) {
 	}
 }
 
-func TestVersionStringLax(t *testing.T) {
-	t.Parallel()
-
-	for _, tt := range laxStringerTests {
-		name := tt.v
-		if name == "" {
-			name = emptyName
-		}
-
-		v, _ := semver.ParseLax(tt.v)
-
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			if v == nil {
-				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
-			}
-
-			got := v.String()
-			if got != tt.want {
-				t.Errorf("ParseLax(%q).String() = %v, want %v", tt.v, got, tt.want)
-			}
-		})
-	}
-}
-
 func TestVersionCoreLax(t *testing.T) {
 	t.Parallel()
 
@@ -528,6 +476,58 @@ func TestVersionCoreLax(t *testing.T) {
 			got := v.Core()
 			if got != tt.want {
 				t.Errorf("ParseLax(%q).Core() = %v, want %v", tt.v, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestVersionString(t *testing.T) {
+	t.Parallel()
+
+	for _, tt := range stringerTests {
+		name := tt.v
+		if name == "" {
+			name = emptyName
+		}
+
+		v, _ := semver.Parse(tt.v)
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			if v == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
+			}
+
+			got := v.String()
+			if got != tt.want {
+				t.Errorf("Version{%q}.String() = %v, want %v", tt.v, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestVersionStringLax(t *testing.T) {
+	t.Parallel()
+
+	for _, tt := range laxStringerTests {
+		name := tt.v
+		if name == "" {
+			name = emptyName
+		}
+
+		v, _ := semver.ParseLax(tt.v)
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			if v == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
+			}
+
+			got := v.String()
+			if got != tt.want {
+				t.Errorf("ParseLax(%q).String() = %v, want %v", tt.v, got, tt.want)
 			}
 		})
 	}

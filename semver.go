@@ -5,6 +5,7 @@
 package semver
 
 import (
+	"cmp"
 	"slices"
 	"strconv"
 	"strings"
@@ -21,6 +22,48 @@ type Version struct {
 	Patch      uint64
 	Prerelease Prerelease
 	Build      BuildIdentifiers
+}
+
+// Compare returns
+//
+//	-1 if v is less than u,
+//	 0 if v equals u,
+//	+1 if v is greater than u.
+func (v *Version) Compare(u *Version) int {
+	var d int
+
+	if d = cmp.Compare(v.Major, u.Major); d != 0 {
+		return d
+	}
+
+	if d = cmp.Compare(v.Minor, u.Minor); d != 0 {
+		return d
+	}
+
+	if d = cmp.Compare(v.Patch, u.Patch); d != 0 {
+		return d
+	}
+
+	return v.Prerelease.Compare(u.Prerelease)
+}
+
+// Core returns the comparable string representation of the version. It doesn't
+// include the build metadata.
+func (v *Version) Core() string {
+	var sb strings.Builder
+
+	sb.WriteString(strconv.FormatUint(v.Major, 10))
+	sb.WriteByte('.')
+	sb.WriteString(strconv.FormatUint(v.Minor, 10))
+	sb.WriteByte('.')
+	sb.WriteString(strconv.FormatUint(v.Patch, 10))
+
+	if len(v.Prerelease) > 0 {
+		sb.WriteByte('-')
+		sb.WriteString(v.Prerelease.String())
+	}
+
+	return sb.String()
 }
 
 // Equal reports whether Version o is equal to v. The two Versions are equal
@@ -48,25 +91,6 @@ func (v *Version) StrictEqual(o *Version) bool {
 		v.Build.equal(o.Build)
 }
 
-// Core returns the comparable string representation of the version. It doesn't
-// include the build metadata.
-func (v *Version) Core() string {
-	var sb strings.Builder
-
-	sb.WriteString(strconv.FormatUint(v.Major, 10))
-	sb.WriteByte('.')
-	sb.WriteString(strconv.FormatUint(v.Minor, 10))
-	sb.WriteByte('.')
-	sb.WriteString(strconv.FormatUint(v.Patch, 10))
-
-	if len(v.Prerelease.identifiers) > 0 {
-		sb.WriteByte('-')
-		sb.WriteString(v.Prerelease.String())
-	}
-
-	return sb.String()
-}
-
 // String returns the string representation of the version.
 func (v *Version) String() string {
 	var sb strings.Builder
@@ -77,7 +101,7 @@ func (v *Version) String() string {
 	sb.WriteByte('.')
 	sb.WriteString(strconv.FormatUint(v.Patch, 10))
 
-	if len(v.Prerelease.identifiers) > 0 {
+	if len(v.Prerelease) > 0 {
 		sb.WriteByte('-')
 		sb.WriteString(v.Prerelease.String())
 	}
