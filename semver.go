@@ -145,6 +145,14 @@ func NewPrerelease(a ...any) (Prerelease, error) {
 		case uint64:
 			identifiers = append(identifiers, numericIdentifier{u})
 		case string:
+			if !isASCII(u) {
+				return nil, fmt.Errorf(
+					"%w: identifier %q contains non-ASCII characters",
+					errInvalidPrereleaseIdent,
+					u,
+				)
+			}
+
 			p, err := parsePrereleaseIdentifier(u)
 			if err != nil {
 				return nil, fmt.Errorf("cannot create Prerelease: %w", err)
@@ -162,6 +170,14 @@ func NewPrerelease(a ...any) (Prerelease, error) {
 // ParsePrerelease parses the given string into a Prerelease, separating
 // the identifiers at dots.
 func ParsePrerelease(s string) (Prerelease, error) {
+	if !isASCII(s) {
+		return nil, fmt.Errorf(
+			"%w: identifier %q contains non-ASCII characters",
+			errInvalidPrereleaseIdent,
+			s,
+		)
+	}
+
 	parts := strings.Split(s, ".")
 	prerelease := make(Prerelease, 0, len(parts))
 
@@ -627,9 +643,16 @@ func parse(s string, minCore int) (*Version, error) {
 			}
 		}
 
-		prerelease, err = ParsePrerelease(s[pos:i])
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse the pre-release: %w", err)
+		parts := strings.Split(s[pos:i], ".")
+		prerelease = make(Prerelease, 0, len(parts))
+
+		for _, v := range parts {
+			p, err := parsePrereleaseIdentifier(v)
+			if err != nil {
+				return nil, fmt.Errorf("parsing prerelease %q failed: %w", s, err)
+			}
+
+			prerelease = append(prerelease, p)
 		}
 
 		pos = i
@@ -660,14 +683,6 @@ func parse(s string, minCore int) (*Version, error) {
 func parsePrereleaseIdentifier(s string) (PrereleaseIdentifier, error) {
 	if s == "" {
 		return nil, fmt.Errorf("%w: identifier is an empty string", errInvalidPrereleaseIdent)
-	}
-
-	if !isASCII(s) {
-		return nil, fmt.Errorf(
-			"%w: identifier %q contains non-ASCII characters",
-			errInvalidPrereleaseIdent,
-			s,
-		)
 	}
 
 	// Check the case for single zero early.
