@@ -27,6 +27,7 @@ This project adheres to
 - **BREAKING:** `Version.String` to include the build metadata in the string.
 - **BREAKING:** Change the `Prerelease` type to be a simple slice of pre-release
   identifiers.
+- Make `PrereleaseIdentifier` public.
 
 ### Removed
 
