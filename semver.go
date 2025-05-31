@@ -809,7 +809,7 @@ func parseBuild(s string) ([]string, error) {
 
 	result := strings.Split(s, ".")
 	for _, v := range result {
-		if s == "" {
+		if v == "" {
 			return nil, fmt.Errorf(
 				"empty string as a dot-separated build identifier: %w",
 				ErrInvalidVersion,
