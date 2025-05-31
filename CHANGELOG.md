@@ -29,6 +29,7 @@ This project adheres to
 - **BREAKING:** The `Prefix` variants of the functions: `IsValidPrefix`,
   `ParsePrefix`, and `MustParsePrefix` as the Go standard library offers an easy
   way to remove prefixes from strings.
+- Private `rawStr` field from `Version` struct.
 
 ### Fixed
 
