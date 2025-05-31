@@ -21,7 +21,6 @@ type Version struct {
 	Patch      uint64
 	Prerelease Prerelease
 	Build      BuildIdentifiers
-	rawStr     string
 }
 
 // Equal reports whether Version o is equal to v. The two Versions are equal

@@ -96,7 +96,6 @@ func Parse(ver string) (*Version, error) {
 		Patch:      patch,
 		Prerelease: Prerelease{identifiers: prereleaseIdentifiers},
 		Build:      build,
-		rawStr:     ver,
 	}, nil
 }
 
@@ -137,7 +136,6 @@ func ParseLax(ver string) (*Version, error) { //nolint:cyclop,funlen // no probl
 			Patch:      0,
 			Prerelease: Prerelease{identifiers: []prereleaseIdentifier{}},
 			Build:      BuildIdentifiers{},
-			rawStr:     ver,
 		}, nil
 	}
 
@@ -160,7 +158,6 @@ func ParseLax(ver string) (*Version, error) { //nolint:cyclop,funlen // no probl
 				Patch:      0,
 				Prerelease: Prerelease{identifiers: []prereleaseIdentifier{}},
 				Build:      BuildIdentifiers{},
-				rawStr:     ver,
 			}, nil
 		}
 	}
@@ -184,7 +181,6 @@ func ParseLax(ver string) (*Version, error) { //nolint:cyclop,funlen // no probl
 				Patch:      patch,
 				Prerelease: Prerelease{identifiers: []prereleaseIdentifier{}},
 				Build:      BuildIdentifiers{},
-				rawStr:     ver,
 			}, nil
 		}
 	}
@@ -230,7 +226,6 @@ func ParseLax(ver string) (*Version, error) { //nolint:cyclop,funlen // no probl
 		Patch:      patch,
 		Prerelease: Prerelease{identifiers: prereleaseIdentifiers},
 		Build:      build,
-		rawStr:     ver,
 	}, nil
 }
 
