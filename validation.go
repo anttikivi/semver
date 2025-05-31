@@ -1,13 +1,11 @@
 package semver
 
-import (
-	"fmt"
-)
+import "fmt"
 
 // Values for number mode.
 const (
 	dot numberMode = iota
-	ending
+	end
 	loose
 )
 
@@ -44,7 +42,7 @@ func IsValid(ver string) bool {
 
 	// Next check the patch number. Otherwise the check is the same as for major
 	// and minor but it can end in a hyphen or a plus.
-	if ok, pos = isVersionNumberValid(ver, pos, ending); !ok {
+	if ok, pos = isVersionNumberValid(ver, pos, end); !ok {
 		return false
 	}
 
@@ -193,7 +191,7 @@ func isVersionNumberValid(ver string, pos int, mode numberMode) (bool, int) {
 				return false, pos
 			}
 		}
-	case ending:
+	case end:
 		for ; pos < len(ver) && ver[pos] != '-' && ver[pos] != '+'; pos++ {
 			if ver[pos] < '0' || ver[pos] > '9' {
 				return false, pos
