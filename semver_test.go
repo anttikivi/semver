@@ -15,8 +15,10 @@ var testPrefixes = map[string]bool{
 }
 
 var (
-	stringerTests     []stringerTestCase
-	coreStringerTests []stringerTestCase
+	stringerTests        []stringerTestCase
+	coreStringerTests    []stringerTestCase
+	laxStringerTests     []stringerTestCase
+	laxCoreStringerTests []stringerTestCase
 )
 
 var baseTests = []baseTestCase{
@@ -311,13 +313,13 @@ var baseTests = []baseTestCase{
 		"1.2.3-012a",
 		"1.2.3-012a",
 	},
-	{"1.2.3-0123", nil, true, nil, true, "1.2.3-0123", "1.2.3-0123"},
-	{"01.2.3", nil, true, nil, true, "01.2.3", "01.2.3"},
-	{"1.02.3", nil, true, nil, true, "1.02.3", "1.02.3"},
-	{"1.2.03", nil, true, nil, true, "1.2.03", "1.2.03"},
-	{"01", nil, true, nil, true, "01", "01"},
-	{"1.02", nil, true, nil, true, "1.02", "1.02"},
-	{"01.02", nil, true, nil, true, "01.02", "01.02"},
+	{"1.2.3-0123", nil, true, nil, true, "", ""},
+	{"01.2.3", nil, true, nil, true, "", ""},
+	{"1.02.3", nil, true, nil, true, "", ""},
+	{"1.2.03", nil, true, nil, true, "", ""},
+	{"01", nil, true, nil, true, "", ""},
+	{"1.02", nil, true, nil, true, "", ""},
+	{"01.02", nil, true, nil, true, "", ""},
 	{
 		"0.0.0",
 		newVersion(0, 0, 0, newPrerelease()),
@@ -374,12 +376,40 @@ type stringerTestCase struct {
 func init() {
 	for prefix, allowed := range testPrefixes {
 		for _, t := range baseTests {
+			if !allowed || t.wantLax == nil {
+				continue
+			}
+
 			input := prefix + t.v
 
-			want := t.wantStr
+			want := ""
 
-			if !allowed {
-				want = ""
+			if allowed && t.wantLax != nil {
+				want = t.wantStr
+			}
+
+			laxStringerTests = append(laxStringerTests, stringerTestCase{
+				v:    input,
+				want: want,
+			})
+
+			if allowed && t.wantLax != nil {
+				want = t.wantCoreStr
+			}
+
+			laxCoreStringerTests = append(laxCoreStringerTests, stringerTestCase{
+				v:    input,
+				want: want,
+			})
+
+			if t.wantStrict == nil {
+				continue
+			}
+
+			want = ""
+
+			if allowed && t.wantStrict != nil {
+				want = t.wantStr
 			}
 
 			stringerTests = append(stringerTests, stringerTestCase{
@@ -387,7 +417,7 @@ func init() {
 				want: want,
 			})
 
-			if allowed {
+			if allowed && t.wantStrict != nil {
 				want = t.wantCoreStr
 			}
 
@@ -408,15 +438,17 @@ func TestVersionString(t *testing.T) {
 			name = emptyName
 		}
 
+		v, _ := semver.Parse(tt.v)
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, _ := semver.Parse(tt.v)
-			if tt.want == "" && got != nil {
-				t.Fatalf("Parse(%q) succeeded unexpectedly in the string test", tt.v)
+			if v == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
 			}
 
-			if got != nil && got.String() != tt.want {
+			got := v.String()
+			if got != tt.want {
 				t.Errorf("Version{%q}.String() = %v, want %v", tt.v, got, tt.want)
 			}
 		})
@@ -432,16 +464,70 @@ func TestVersionCore(t *testing.T) {
 			name = emptyName
 		}
 
+		v, _ := semver.Parse(tt.v)
+
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			got, _ := semver.Parse(tt.v)
-			if tt.want == "" && got != nil {
-				t.Fatalf("Parse(%q) succeeded unexpectedly in the string test", tt.v)
+			if v == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
 			}
 
-			if got != nil && got.Core() != tt.want {
+			got := v.Core()
+			if got != tt.want {
 				t.Errorf("Version{%q}.Core() = %v, want %v", tt.v, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestVersionStringLax(t *testing.T) {
+	t.Parallel()
+
+	for _, tt := range laxStringerTests {
+		name := tt.v
+		if name == "" {
+			name = emptyName
+		}
+
+		v, _ := semver.ParseLax(tt.v)
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			if v == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
+			}
+
+			got := v.String()
+			if got != tt.want {
+				t.Errorf("ParseLax(%q).String() = %v, want %v", tt.v, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestVersionCoreLax(t *testing.T) {
+	t.Parallel()
+
+	for _, tt := range laxCoreStringerTests {
+		name := tt.v
+		if name == "" {
+			name = emptyName
+		}
+
+		v, _ := semver.ParseLax(tt.v)
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			if v == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
+			}
+
+			got := v.Core()
+			if got != tt.want {
+				t.Errorf("ParseLax(%q).Core() = %v, want %v", tt.v, got, tt.want)
 			}
 		})
 	}
