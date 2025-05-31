@@ -14,6 +14,7 @@ This project adheres to
 - `Version.StrictEqual` function that compares the whole version data to
   determine the equality of two versions, including build metadata.
 - `IsValidLax` for checking if partial version strings are valid.
+- `ParseLax` and `MustParseLax` for parsing partial version strings.
 
 ### Changed
 

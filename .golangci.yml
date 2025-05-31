@@ -9,7 +9,6 @@ linters:
     rules:
       - path: _test\.go
         linters:
-          - dupl
           - funlen
           - gochecknoglobals
           - goconst

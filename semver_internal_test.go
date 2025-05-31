@@ -12,7 +12,7 @@ func BenchmarkIsValidByParse(b *testing.B) {
 
 // isValidByParse is the old implementation of the validation function.
 func isValidByParse(s string) bool {
-	if _, err := parse(s); err != nil {
+	if _, err := Parse(s); err != nil {
 		return false
 	}
 
