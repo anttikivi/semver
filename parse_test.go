@@ -72,13 +72,33 @@ func TestMustParse(t *testing.T) {
 			t.Parallel()
 
 			defer func() {
-				if r := recover(); tt.wantErr == (r == nil) {
-					t.Errorf("MustParse(%q) did not panic", tt.v)
+				r := recover()
+
+				if tt.wantErr {
+					if r == nil {
+						t.Errorf("MustParse(%q) did NOT panic as expected", tt.v)
+					}
+				} else {
+					if r != nil {
+						t.Errorf("MustParse(%q) panicked unexpectedly: %v", tt.v, r)
+					}
 				}
 			}()
 
-			if got := semver.MustParse(tt.v); !tt.want.StrictEqual(got) {
-				t.Errorf("MustParse(%q) = %v, want %v", tt.v, got, tt.want)
+			got := semver.MustParse(tt.v)
+
+			if tt.wantErr {
+				t.Errorf("MustParse(%q) returned %v but was expected to panic", tt.v, got)
+
+				return
+			}
+
+			if !tt.want.Equal(got) {
+				t.Errorf("MustParse(%q) = %v, want %v (equal)", tt.v, got, tt.want)
+			}
+
+			if !tt.want.StrictEqual(got) {
+				t.Errorf("MustParse(%q) = %v, want %v (strictly equal)", tt.v, got, tt.want)
 			}
 		})
 	}
@@ -97,16 +117,36 @@ func TestParse(t *testing.T) {
 			t.Parallel()
 
 			got, gotErr := semver.Parse(tt.v)
-			if gotErr == nil && tt.wantErr {
-				t.Fatalf("Parse(%q) succeeded unexpectedly", tt.v)
+
+			if tt.wantErr {
+				if gotErr == nil {
+					t.Fatalf("Parse(%q) succeeded unexpectedly; got %v, want error", tt.v, got)
+				}
+
+				if got != nil {
+					t.Errorf(
+						"Parse(%q) returned a non-nil version (%+v) but also an error (%v); want (nil, error)",
+						tt.v,
+						got,
+						gotErr,
+					)
+				}
+			} else if gotErr != nil {
+				t.Errorf("Parse(%q) failed unexpectedly: %v", tt.v, gotErr)
+
+				return
 			}
 
-			if gotErr != nil && !tt.wantErr {
-				t.Errorf("Parse(%q) failed: %v", tt.v, gotErr)
+			if tt.wantErr {
+				return
+			}
+
+			if !tt.want.Equal(got) {
+				t.Errorf("Parse(%q) = %v, want %v (equal)", tt.v, got, tt.want)
 			}
 
 			if !tt.want.StrictEqual(got) {
-				t.Errorf("Parse(%q) = %v, want %v", tt.v, got, tt.want)
+				t.Errorf("Parse(%q) = %v, want %v (strictly equal)", tt.v, got, tt.want)
 			}
 		})
 	}
@@ -125,13 +165,33 @@ func TestMustParseLax(t *testing.T) {
 			t.Parallel()
 
 			defer func() {
-				if r := recover(); tt.wantErr == (r == nil) {
-					t.Errorf("MustParseLax(%q) did not panic", tt.v)
+				r := recover()
+
+				if tt.wantErr {
+					if r == nil {
+						t.Errorf("MustParseLax(%q) did NOT panic as expected", tt.v)
+					}
+				} else {
+					if r != nil {
+						t.Errorf("MustParseLax(%q) panicked unexpectedly: %v", tt.v, r)
+					}
 				}
 			}()
 
-			if got := semver.MustParseLax(tt.v); !tt.want.StrictEqual(got) {
-				t.Errorf("MustParseLax(%q) = %v, want %v", tt.v, got, tt.want)
+			got := semver.MustParseLax(tt.v)
+
+			if tt.wantErr {
+				t.Errorf("MustParseLax(%q) returned %v but was expected to panic", tt.v, got)
+
+				return
+			}
+
+			if !tt.want.Equal(got) {
+				t.Errorf("MustParseLax(%q) = %v, want %v (equal)", tt.v, got, tt.want)
+			}
+
+			if !tt.want.StrictEqual(got) {
+				t.Errorf("MustParseLax(%q) = %v, want %v (strictly equal)", tt.v, got, tt.want)
 			}
 		})
 	}
@@ -150,16 +210,36 @@ func TestParseLax(t *testing.T) {
 			t.Parallel()
 
 			got, gotErr := semver.ParseLax(tt.v)
-			if gotErr == nil && tt.wantErr {
-				t.Fatalf("ParseLax(%q) succeeded unexpectedly", tt.v)
+
+			if tt.wantErr {
+				if gotErr == nil {
+					t.Fatalf("ParseLax(%q) succeeded unexpectedly; got %v, want error", tt.v, got)
+				}
+
+				if got != nil {
+					t.Errorf(
+						"ParseLax(%q) returned a non-nil version (%+v) but also an error (%v); want (nil, error)",
+						tt.v,
+						got,
+						gotErr,
+					)
+				}
+			} else if gotErr != nil {
+				t.Errorf("ParseLax(%q) failed unexpectedly: %v", tt.v, gotErr)
+
+				return
 			}
 
-			if gotErr != nil && !tt.wantErr {
-				t.Errorf("ParseLax(%q) failed: %v", tt.v, gotErr)
+			if tt.wantErr {
+				return
+			}
+
+			if !tt.want.Equal(got) {
+				t.Errorf("ParseLax(%q) = %v, want %v (equal)", tt.v, got, tt.want)
 			}
 
 			if !tt.want.StrictEqual(got) {
-				t.Errorf("ParseLax(%q) = %v, want %v", tt.v, got, tt.want)
+				t.Errorf("ParseLax(%q) = %v, want %v (strictly equal)", tt.v, got, tt.want)
 			}
 		})
 	}
