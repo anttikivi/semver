@@ -361,6 +361,32 @@ var baseTests = []baseTestCase{
 	},
 }
 
+var cmpTests = []cmpTestCase{
+	{"1.2.3", "1.3.1", -1},
+	{"2.3.4", "1.2.3", 1},
+	{"2.2.3", "2.2.2", 1},
+	{"2.2.2", "2.2.3", -1},
+	{"1", "1", 0},
+	{"2.1", "2.1", 0},
+	{"3.2-beta", "3.2-beta", 0},
+	{"1.3", "1.1.4", 1},
+	{"4.5", "4.5-beta", 1},
+	{"4.5-beta", "4.5", -1},
+	{"4.5-alpha", "4.5-beta", -1},
+	{"4.5-alpha", "4.5-alpha", 0},
+	{"4.5-beta.2", "4.5-beta.1", 1},
+	{"4.5-beta2", "4.5-beta1", 1},
+	{"4.5-beta", "4.5-beta.2", -1},
+	{"4.5-beta", "4.5-beta.foo", -1},
+	{"4.5-beta.2", "4.5-beta", 1},
+	{"4.5-beta.foo", "4.5-beta", 1},
+	{"1.2+bar", "1.2+baz", 0},
+	{"1.0.0-beta.4", "1.0.0-beta.-2", -1},
+	{"1.0.0-beta.-2", "1.0.0-beta.-3", -1},
+	{"1.0.0-beta.-3", "1.0.0-beta.5", 1},
+	{"4.2.3-beta+build", "4.2.3-beta+meta", 0},
+}
+
 type baseTestCase struct {
 	v             string
 	wantStrict    *semver.Version
@@ -369,6 +395,12 @@ type baseTestCase struct {
 	wantLaxErr    bool
 	wantStr       string
 	wantCoreStr   string
+}
+
+type cmpTestCase struct {
+	x    string
+	y    string
+	want int
 }
 
 type parserTestCase struct {
@@ -491,6 +523,32 @@ func BenchmarkParseRegex(b *testing.B) {
 
 	for range b.N {
 		_ = parseRegex(test)
+	}
+}
+
+func TestCompare(t *testing.T) {
+	t.Parallel()
+
+	for _, tt := range cmpTests {
+		v, _ := semver.ParseLax(tt.x)
+		w, _ := semver.ParseLax(tt.y)
+
+		t.Run(tt.x+"/"+tt.y, func(t *testing.T) {
+			t.Parallel()
+
+			if v == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.x)
+			}
+
+			if w == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.y)
+			}
+
+			got := semver.Compare(v, w)
+			if got != tt.want {
+				t.Errorf("Version{%q}.Compare(%q) = %v, want %v", tt.x, tt.y, got, tt.want)
+			}
+		})
 	}
 }
 
@@ -675,6 +733,32 @@ func TestParseLax(t *testing.T) {
 
 			if !tt.want.StrictEqual(got) {
 				t.Errorf("ParseLax(%q) = %v, want %v (strictly equal)", tt.v, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestVersionCompare(t *testing.T) {
+	t.Parallel()
+
+	for _, tt := range cmpTests {
+		v, _ := semver.ParseLax(tt.x)
+		w, _ := semver.ParseLax(tt.y)
+
+		t.Run(tt.x+"/"+tt.y, func(t *testing.T) {
+			t.Parallel()
+
+			if v == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.x)
+			}
+
+			if w == nil {
+				t.Fatalf("Setup error: Version is nil for input %q", tt.y)
+			}
+
+			got := v.Compare(w)
+			if got != tt.want {
+				t.Errorf("Version{%q}.Compare(%q) = %v, want %v", tt.x, tt.y, got, tt.want)
 			}
 		})
 	}

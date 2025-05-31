@@ -187,25 +187,35 @@ func NewBuildIdentifiers(s ...string) BuildIdentifiers {
 
 // Compare returns
 //
-//	-1 if v is less than u,
-//	 0 if v equals u,
-//	+1 if v is greater than u.
-func (v *Version) Compare(u *Version) int {
+//	-1 if v is less than w,
+//	 0 if v equals w,
+//	+1 if v is greater than w.
+//
+// The comparison is done according to the semantic versioning specification.
+func (v *Version) Compare(w *Version) int {
 	var d int
 
-	if d = cmp.Compare(v.Major, u.Major); d != 0 {
+	if d = cmp.Compare(v.Major, w.Major); d != 0 {
 		return d
 	}
 
-	if d = cmp.Compare(v.Minor, u.Minor); d != 0 {
+	if d = cmp.Compare(v.Minor, w.Minor); d != 0 {
 		return d
 	}
 
-	if d = cmp.Compare(v.Patch, u.Patch); d != 0 {
+	if d = cmp.Compare(v.Patch, w.Patch); d != 0 {
 		return d
 	}
 
-	return v.Prerelease.Compare(u.Prerelease)
+	if v.Prerelease == nil && w.Prerelease != nil {
+		return 1
+	}
+
+	if v.Prerelease != nil && w.Prerelease == nil {
+		return -1
+	}
+
+	return v.Prerelease.Compare(w.Prerelease)
 }
 
 // Core returns the comparable string representation of the version. It doesn't
@@ -501,6 +511,17 @@ func (i numericIdentifier) String() string {
 // Value returns the Value for the identifier.
 func (i numericIdentifier) Value() any {
 	return i.v
+}
+
+// Compare returns
+//
+//	-1 if v is less than w,
+//	 0 if v equals w,
+//	+1 if v is greater than w.
+//
+// The comparison is done according to the semantic versioning specification.
+func Compare(v *Version, w *Version) int {
+	return v.Compare(w)
 }
 
 //nolint:cyclop,funlen,gocognit // TODO: see if worth fixing

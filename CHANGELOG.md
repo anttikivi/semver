@@ -15,8 +15,8 @@ This project adheres to
   determine the equality of two versions, including build metadata.
 - `IsValidLax` for checking if partial version strings are valid.
 - `ParseLax` and `MustParseLax` for parsing partial version strings.
-- `Version.Compare` and `Prerelease.Compare` for comparing versions and
-  pre-releases respectively.
+- `Compare`, `Version.Compare`, and `Prerelease.Compare` for comparing versions
+  and pre-releases respectively.
 
 ### Changed
 
