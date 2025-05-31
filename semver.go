@@ -679,46 +679,6 @@ func parse(s string, minCore int) (*Version, error) {
 	}, nil
 }
 
-//nolint:ireturn // interface return is needed
-func parsePrereleaseIdentifier(s string) (PrereleaseIdentifier, error) {
-	if s == "" {
-		return nil, fmt.Errorf("%w: identifier is an empty string", errInvalidPrereleaseIdent)
-	}
-
-	// Check the case for single zero early.
-	if s == "0" {
-		return numericIdentifier{0}, nil
-	}
-
-	switch {
-	case isNumericIdentifier(s):
-		// If this is a numeric identifier and the first character is zero, we
-		// already know that the length is greater than 1 as the case for that
-		// was checked at the start.
-		if s[0] == '0' {
-			return nil, fmt.Errorf(
-				"%w: numeric identifier with a leading zero: %s",
-				errInvalidPrereleaseIdent,
-				s,
-			)
-		}
-
-		u, err := strconv.ParseUint(s, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"failed to convert pre-release identifier to integer: %w",
-				err,
-			)
-		}
-
-		return numericIdentifier{u}, nil
-	case isAlphanumericIdentifier(s):
-		return alphanumericIdentifier{s}, nil
-	default:
-		return nil, fmt.Errorf("%w: %s", errInvalidPrereleaseIdent, s)
-	}
-}
-
 // checkPrefix parses the possible "v" prefix for the version string.
 // The function returns the new position where the parsing continues.
 func checkPrefix(s string) (int, error) {
@@ -819,31 +779,61 @@ func isNumericIdentifier(s string) bool {
 
 func parseBuild(s string) ([]string, error) {
 	if s == "" {
-		return nil, fmt.Errorf("cannot parse empty string as a build: %w", ErrInvalidVersion)
+		return nil, fmt.Errorf("%w: cannot parse empty string as a build", ErrInvalidVersion)
 	}
 
 	result := strings.Split(s, ".")
 	for _, v := range result {
 		if v == "" {
-			return nil, fmt.Errorf(
-				"empty string as a dot-separated build identifier: %w",
-				ErrInvalidVersion,
-			)
+			return nil, fmt.Errorf("%w: empty string as a dot-separated build identifier", ErrInvalidVersion)
 		}
 
 		// This should be safe as all of the characters in the version must be
 		// ASCII.
-		if strings.ContainsFunc(
-			v,
-			func(r rune) bool { return !isIdentifierCharacter(byte(r)) },
-		) {
-			return nil, fmt.Errorf(
-				"invalid rune in the build identifier %q: %w",
-				v,
-				ErrInvalidVersion,
-			)
+		if !isAlphanumericIdentifier(v) {
+			return nil, fmt.Errorf("%w: invalid rune in the build identifier %q", ErrInvalidVersion, v)
 		}
 	}
 
 	return result, nil
+}
+
+//nolint:ireturn // interface return is needed
+func parsePrereleaseIdentifier(s string) (PrereleaseIdentifier, error) {
+	if s == "" {
+		return nil, fmt.Errorf("%w: identifier is an empty string", errInvalidPrereleaseIdent)
+	}
+
+	// Check the case for single zero early.
+	if s == "0" {
+		return numericIdentifier{0}, nil
+	}
+
+	switch {
+	case isNumericIdentifier(s):
+		// If this is a numeric identifier and the first character is zero, we
+		// already know that the length is greater than 1 as the case for that
+		// was checked at the start.
+		if s[0] == '0' {
+			return nil, fmt.Errorf(
+				"%w: numeric identifier with a leading zero: %s",
+				errInvalidPrereleaseIdent,
+				s,
+			)
+		}
+
+		u, err := strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"failed to convert pre-release identifier to integer: %w",
+				err,
+			)
+		}
+
+		return numericIdentifier{u}, nil
+	case isAlphanumericIdentifier(s):
+		return alphanumericIdentifier{s}, nil
+	default:
+		return nil, fmt.Errorf("%w: %s", errInvalidPrereleaseIdent, s)
+	}
 }
