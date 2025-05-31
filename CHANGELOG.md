@@ -41,6 +41,7 @@ This project adheres to
 - Fix the version parser accepting any character after the patch version without
   returning an error.
 - Fix `IsValid` accepting version strings that had leading zero.
+- Fix many edge cases in `IsValid` and `IsValidLax`.
 
 ## [0.3.0]
 

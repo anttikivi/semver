@@ -785,13 +785,20 @@ func parseBuild(s string) ([]string, error) {
 	result := strings.Split(s, ".")
 	for _, v := range result {
 		if v == "" {
-			return nil, fmt.Errorf("%w: empty string as a dot-separated build identifier", ErrInvalidVersion)
+			return nil, fmt.Errorf(
+				"%w: empty string as a dot-separated build identifier",
+				ErrInvalidVersion,
+			)
 		}
 
 		// This should be safe as all of the characters in the version must be
 		// ASCII.
 		if !isAlphanumericIdentifier(v) {
-			return nil, fmt.Errorf("%w: invalid rune in the build identifier %q", ErrInvalidVersion, v)
+			return nil, fmt.Errorf(
+				"%w: invalid rune in the build identifier %q",
+				ErrInvalidVersion,
+				v,
+			)
 		}
 	}
 

@@ -9,138 +9,73 @@ const (
 	loose
 )
 
+// Values for validation mode.
+const (
+	strict validationMode = iota
+	lax
+)
+
 // A numberMode is a helper parameter type for parsing the numbers in
 // the version strings.
 type numberMode int
 
+// A validationMode is a helper parameter type for telling if the validation
+// parser should be lax about the version number.
+type validationMode int
+
 // IsValid reports whether s is a valid semantic version string. The version may
 // have a 'v' prefix.
-func IsValid(ver string) bool {
-	ok, pos := isStartValid(ver)
-	if !ok {
-		return false
-	}
-
-	// Check the major and minor number.
-	// Both of them should start at the next position and end in a dot so we can
-	// just repeat this loop twice.
-	for range 2 {
-		if ok, pos = isVersionNumberValid(ver, pos, dot); !ok {
-			return false
-		}
-
-		// We cannot be at the end yet.
-		if pos >= len(ver) {
-			return false
-		}
-
-		// Every character was a digit and we reached a dot before the end of the
-		// string so let's hop over the dot and repeat the process for the next
-		// number.
-		pos++
-	}
-
-	// Next check the patch number. Otherwise the check is the same as for major
-	// and minor but it can end in a hyphen or a plus.
-	if ok, pos = isVersionNumberValid(ver, pos, end); !ok {
-		return false
-	}
-
-	// If the major, minor, and patch were checked successfully and we are at
-	// the end, the version is valid.
-	if pos >= len(ver) {
-		return true
-	}
-
-	// Check the pre-release identifiers.
-	if ver[pos] == '-' {
-		pos++
-
-		var ok bool
-		if ok, pos = isPrereleaseValid(ver, pos); !ok {
-			return false
-		}
-	}
-
-	if pos >= len(ver) {
-		return true
-	}
-
-	if ver[pos] == '+' {
-		pos++
-
-		if ok := isBuildMetadataValid(ver, pos); !ok {
-			return false
-		}
-	}
-
-	return true
+func IsValid(s string) bool {
+	return isValid(s, strict)
 }
 
 // IsValidLax reports whether s is a valid semantic version string even if it is
 // only a partial version. In other words, this function reads `v1` and `v1.2`
 // as valid versions. The version may have a 'v' prefix.
-func IsValidLax(ver string) bool {
-	ok, pos := isStartValid(ver)
+func IsValidLax(s string) bool {
+	return isValid(s, lax)
+}
+
+func isValid(s string, mode validationMode) bool {
+	ok, pos := isStartValid(s)
 	if !ok {
 		return false
 	}
 
-	if ok, pos = isVersionNumberValid(ver, pos, loose); !ok {
+	if ok, pos = isCoreValid(s, pos, mode); !ok {
 		return false
 	}
 
-	// Only major version number is provided.
-	if pos >= len(ver) {
+	if pos >= len(s) {
 		return true
 	}
 
-	// The next character is a dot so the minor version number should be
-	// provided. We can branch off to checking it.
-	if ver[pos] == '.' {
-		pos++
-		if ok, pos = isVersionNumberValid(ver, pos, loose); !ok {
-			return false
-		}
-
-		// Only major and minor version numbers are provided.
-		if pos >= len(ver) {
-			return true
-		}
+	if len(s)-pos < 2 { //nolint:mnd // not enough characters left
+		return false
 	}
 
-	// The next character is a dot so the patch version number should be
-	// provided. We can branch off to checking it.
-	if ver[pos] == '.' {
-		pos++
-		if ok, pos = isVersionNumberValid(ver, pos, loose); !ok {
-			return false
-		}
-
-		// Only major and minor version numbers are provided.
-		if pos >= len(ver) {
-			return true
-		}
+	if s[pos] != '-' && s[pos] != '+' {
+		return false
 	}
 
 	// Check the pre-release identifiers.
-	if ver[pos] == '-' {
-		// Skip the hyphen.
+	if s[pos] == '-' {
 		pos++
 
-		if ok, pos = isPrereleaseValid(ver, pos); !ok {
+		var ok bool
+		if ok, pos = isPrereleaseValid(s, pos); !ok {
 			return false
 		}
 	}
 
-	if pos >= len(ver) {
+	if pos >= len(s) {
 		return true
 	}
 
-	if ver[pos] == '+' {
+	if s[pos] == '+' {
 		pos++
 
-		if ok = isBuildMetadataValid(ver, pos); !ok {
+		if ok := isBuildMetadataValid(s, pos); !ok {
 			return false
 		}
 	}
@@ -158,12 +93,12 @@ func isStartValid(ver string) (bool, int) {
 
 	pos := 0
 
-	b := ver[0]
-	if (b < '0' || '9' < b) && b != 'v' {
+	c := ver[0]
+	if !isDigit(c) && c != 'v' {
 		return false, pos
 	}
 
-	if b == 'v' {
+	if c == 'v' {
 		pos++
 	}
 
@@ -174,32 +109,88 @@ func isStartValid(ver string) (bool, int) {
 	return true, pos
 }
 
+func isCoreValid(s string, pos int, mode validationMode) (bool, int) {
+	var ok bool
+
+	numMode := dot
+	if mode == lax {
+		numMode = loose
+	}
+
+	if ok, pos = isVersionNumberValid(s, pos, numMode); !ok {
+		return false, pos
+	}
+
+	if pos >= len(s) {
+		return mode == lax, pos
+	}
+
+	if mode == lax && (s[pos] == '-' || s[pos] == '+') {
+		return true, pos
+	}
+
+	if s[pos] != '.' {
+		return false, pos
+	}
+
+	pos++
+	if ok, pos = isVersionNumberValid(s, pos, numMode); !ok {
+		return false, pos
+	}
+
+	if pos >= len(s) {
+		return mode == lax, pos
+	}
+
+	if mode == lax && (s[pos] == '-' || s[pos] == '+') {
+		return true, pos
+	}
+
+	if s[pos] != '.' {
+		return false, pos
+	}
+
+	if mode == strict {
+		numMode = end
+	}
+
+	pos++
+	if ok, pos = isVersionNumberValid(s, pos, numMode); !ok {
+		return false, pos
+	}
+
+	// Only major and minor version numbers are provided.
+	if pos >= len(s) {
+		return true, pos
+	}
+
+	return true, pos
+}
+
 // isVersionNumberValid reports whether the next number in the version string is
 // valid. It returns the status of the check and the new position. If final is
 // set to true, the number may end in a "-" or a "+" instead of a ".".
-//
-//nolint:cyclop // no problem
-func isVersionNumberValid(ver string, pos int, mode numberMode) (bool, int) {
+func isVersionNumberValid(s string, pos int, mode numberMode) (bool, int) {
 	start := pos
 
 	// Check that every number before the next character that ends it is
 	// a digit.
 	switch mode {
 	case dot:
-		for ; pos < len(ver) && ver[pos] != '.'; pos++ {
-			if ver[pos] < '0' || ver[pos] > '9' {
+		for ; pos < len(s) && s[pos] != '.'; pos++ {
+			if !isDigit(s[pos]) {
 				return false, pos
 			}
 		}
 	case end:
-		for ; pos < len(ver) && ver[pos] != '-' && ver[pos] != '+'; pos++ {
-			if ver[pos] < '0' || ver[pos] > '9' {
+		for ; pos < len(s) && s[pos] != '-' && s[pos] != '+'; pos++ {
+			if !isDigit(s[pos]) {
 				return false, pos
 			}
 		}
 	case loose:
-		for ; pos < len(ver) && ver[pos] != '.' && ver[pos] != '-' && ver[pos] != '+'; pos++ {
-			if ver[pos] < '0' || ver[pos] > '9' {
+		for ; pos < len(s) && s[pos] != '.' && s[pos] != '-' && s[pos] != '+'; pos++ {
+			if !isDigit(s[pos]) {
 				return false, pos
 			}
 		}
@@ -207,14 +198,18 @@ func isVersionNumberValid(ver string, pos int, mode numberMode) (bool, int) {
 		panic(fmt.Sprintf("invalid number mode: %d", mode))
 	}
 
-	if pos-start > 1 && ver[start] == '0' {
+	if pos == start {
+		return false, pos
+	}
+
+	if pos-start > 1 && s[start] == '0' {
 		return false, pos
 	}
 
 	return true, pos
 }
 
-func isPrereleaseValid(ver string, pos int) (bool, int) { //nolint:cyclop // no problem
+func isPrereleaseValid(ver string, pos int) (bool, int) { //nolint:cyclop,gocognit // no problem
 	num := true
 	zero := false
 	currentLen := 0
@@ -223,6 +218,10 @@ func isPrereleaseValid(ver string, pos int) (bool, int) { //nolint:cyclop // no 
 		b := ver[pos]
 		// If the character is a dot, start a new identifier.
 		if b == '.' {
+			if currentLen == 0 {
+				return false, pos
+			}
+
 			// If the identifier with a leading zero is a number longer than
 			// one character, the version is invalid.
 			if zero && num && currentLen > 1 {
@@ -232,11 +231,12 @@ func isPrereleaseValid(ver string, pos int) (bool, int) { //nolint:cyclop // no 
 			num = true
 			zero = false
 			currentLen = 0
-			pos++
-			// Empty identifier is invalid.
-			if b = ver[pos]; b == '+' || pos >= len(ver) {
-				return false, pos
+
+			if pos+1 >= len(ver) || ver[pos+1] == '+' || ver[pos+1] == '.' {
+				return false, pos + 1
 			}
+
+			continue
 		}
 
 		if b == '0' && currentLen == 0 {
@@ -271,13 +271,34 @@ func isPrereleaseValid(ver string, pos int) (bool, int) { //nolint:cyclop // no 
 }
 
 func isBuildMetadataValid(ver string, pos int) bool {
-	for ; pos < len(ver); pos++ {
-		b := ver[pos]
-		if ('A' > b || b > 'Z') && ('a' > b || b > 'z') && ('0' > b || b > '9') && b != '-' &&
-			b != '.' {
-			return false
-		}
+	if pos >= len(ver) {
+		return false
 	}
 
-	return true
+	l := 0
+
+	for ; pos < len(ver); pos++ {
+		c := ver[pos]
+		if c == '.' {
+			if l == 0 {
+				return false
+			}
+
+			l = 0
+
+			if pos == len(ver)-1 {
+				return false
+			}
+
+			continue
+		}
+
+		if !isIdentifierCharacter(c) {
+			return false
+		}
+
+		l++
+	}
+
+	return l > 0
 }
