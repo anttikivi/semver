@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/anttikivi/go-semver"
+	"github.com/anttikivi/semver"
 )
 
 var (

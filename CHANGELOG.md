@@ -41,6 +41,13 @@ This project adheres to
   returning an error.
 - Fix `IsValid` accepting version strings that had leading zero.
 
+## [0.3.0]
+
+### Changed
+
+- **BREAKING:** Change the module name from `github.com/anttikivi/go-semver` to
+  `github.com/anttikivi/semver`.
+
 ## [0.2.0] - 2025-01-01
 
 ### Added
@@ -56,6 +63,7 @@ This project adheres to
 - Functions `ParsePrefix` and `MustParsePrefix` for parsing version strings with
   optional prefixes.
 
-[unreleased]: https://github.com/anttikivi/go-semver/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/anttikivi/semver/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/anttikivi/semver/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/anttikivi/go-semver/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/anttikivi/go-semver/releases/tag/v0.1.0

@@ -3,7 +3,7 @@ package semver_test
 import (
 	"testing"
 
-	"github.com/anttikivi/go-semver"
+	"github.com/anttikivi/semver"
 )
 
 const emptyName = "empty"

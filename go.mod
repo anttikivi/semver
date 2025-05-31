@@ -1,3 +1,3 @@
-module github.com/anttikivi/go-semver
+module github.com/anttikivi/semver
 
 go 1.22.9
