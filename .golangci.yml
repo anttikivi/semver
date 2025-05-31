@@ -13,6 +13,7 @@ linters:
           - funlen
           - gochecknoglobals
           - gochecknoinits
+          - gocognit
           - goconst
           - lll
   settings:
@@ -37,7 +38,7 @@ linters:
           list-mode: strict
           allow:
             - $gostd
-            - github.com/anttikivi/go-semver
+            - github.com/anttikivi/semver
     funlen:
       lines: 100
       statements: 50
@@ -50,6 +51,9 @@ linters:
     varnamelen:
       max-distance: 60
       min-name-length: 3
+      ignore-decls:
+        - i int
+        - s string
 
 formatters:
   enable:
