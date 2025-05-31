@@ -18,17 +18,17 @@ This project adheres to
 
 ### Changed
 
-- Change all of the number values in the versions to `uint64`s.
-- `Version.Equal` function to only compare the version parts up to the build
-  metadata as the build metadata is not comparable in the semantic versioning
-  specification.
-- `Version.String` to include the build metadata in the string.
+- **BREAKING:** Change all of the number values in the versions to `uint64`s.
+- **BREAKING:** `Version.Equal` function to only compare the version parts up to
+  the build metadata as the build metadata is not comparable in the semantic
+  versioning specification.
+- **BREAKING:** `Version.String` to include the build metadata in the string.
 
 ### Removed
 
-- The `Prefix` variants of the functions: `IsValidPrefix`, `ParsePrefix`, and
-  `MustParsePrefix` as the Go standard library offers an easy way to remove
-  prefixes from strings.
+- **BREAKING:** The `Prefix` variants of the functions: `IsValidPrefix`,
+  `ParsePrefix`, and `MustParsePrefix` as the Go standard library offers an easy
+  way to remove prefixes from strings.
 
 ### Fixed
 
