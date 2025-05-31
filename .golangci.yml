@@ -11,6 +11,7 @@ linters:
         linters:
           - funlen
           - gochecknoglobals
+          - gochecknoinits
           - goconst
           - lll
   settings:

@@ -11,7 +11,7 @@ const rawVersionRegex = `^v?(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<pa
 
 var versionRegex *regexp.Regexp
 
-func init() { //nolint:gochecknoinits // needed for these tests
+func init() {
 	versionRegex = regexp.MustCompile(rawVersionRegex)
 }
 
