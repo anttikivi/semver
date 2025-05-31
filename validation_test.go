@@ -17,62 +17,6 @@ var (
 	laxIsValidTests   []validationTestCase
 )
 
-var baseValidationTests = []baseValidationTestCase{
-	{"", false, false},
-
-	{"0.1.0-alpha.24+sha.19031c2.darwin.amd64", true, true},
-	{"0.1.0-alpha.24+sha.19031c2-darwin-amd64", true, true},
-
-	{"1,2.3", false, false},
-	{"1.2.3,pre", false, false},
-	{"1.2.3-pre,hello", false, false},
-	{"1.2.3-pre.hello,", false, false},
-	{"1.2.3-pre.hello,wrong", false, false},
-	{"bad", false, false},
-	{"1-alpha.beta.gamma", false, true},
-	{"1-pre", false, true},
-	{"1+meta", false, true},
-	{"1-pre+meta", false, true},
-	{"1.2-pre", false, true},
-	{"1.2+meta", false, true},
-	{"1.2-pre+meta", false, true},
-	{"1.0.0-alpha", true, true},
-	{"1.0.0-alpha.1", true, true},
-	{"1.0.0-alpha.beta", true, true},
-	{"1.0.0-beta", true, true},
-	{"1.0.0-beta.2", true, true},
-	{"1.0.0-beta.11", true, true},
-	{"1.0.0-rc.1", true, true},
-	{"1", false, true},
-	{"1.0", false, true},
-	{"1.0.0", true, true},
-	{"1.2", false, true},
-	{"1.2.0", true, true},
-	{"1.2.3-456", true, true},
-	{"1.2.3-456.789", true, true},
-	{"1.2.3-456-789", true, true},
-	{"1.2.3-456a", true, true},
-	{"1.2.3-pre", true, true},
-	{"1.2.3-pre+meta", true, true},
-	{"1.2.3-pre.1", true, true},
-	{"1.2.3-zzz", true, true},
-	{"1.2.3", true, true},
-	{"1.2.3+meta", true, true},
-	{"1.2.3+meta-pre", true, true},
-	{"1.2.3+meta-pre.sha.256a", true, true},
-	{"1.2.3-012a", true, true},
-	{"1.2.3-0123", false, false},
-	{"01.2.3", false, false},
-	{"1.02.3", false, false},
-	{"1.2.03", false, false},
-}
-
-type baseValidationTestCase struct {
-	v          string
-	wantStrict bool
-	wantLax    bool
-}
-
 type validationTestCase struct {
 	v    string
 	want bool
@@ -81,15 +25,14 @@ type validationTestCase struct {
 func init() {
 	versionRegex = regexp.MustCompile(rawVersionRegex)
 
-	prefixes := map[string]bool{
-		"":       true,
-		"v":      true,
-		"semver": false,
-	}
-	for prefix, allowed := range prefixes {
-		for _, t := range baseValidationTests {
+	for prefix, allowed := range testPrefixes {
+		for _, t := range baseTests {
 			input := prefix + t.v
-			want := allowed && t.wantStrict
+			want := t.wantStrict != nil
+
+			if !allowed {
+				want = false
+			}
 
 			isValidRegexTests = append(isValidRegexTests, validationTestCase{
 				v:    input,
@@ -101,7 +44,9 @@ func init() {
 				want: want,
 			})
 
-			want = allowed && t.wantLax
+			if allowed {
+				want = t.wantLax != nil
+			}
 
 			laxIsValidTests = append(laxIsValidTests, validationTestCase{
 				v:    input,
