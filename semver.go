@@ -325,49 +325,49 @@ func (p Prerelease) Equal(o Prerelease) bool {
 
 // String returns the string representation of the Prerelease p.
 func (p Prerelease) String() string {
-	var sb strings.Builder
-
-	if len(p) > 0 {
-		for _, ident := range p {
-			val := ident.Value()
-
-			switch v := val.(type) {
-			case uint64:
-				sb.WriteString(strconv.FormatUint(v, 10))
-			case string:
-				sb.WriteString(v)
-			default:
-				// TODO: Try not to panic, but we should never get here.
-				panic(fmt.Sprintf("invalid pre-release identifier option: %[1]v (%[1]T)", val))
-			}
-
-			sb.WriteRune('.')
-		}
-	} else {
+	if len(p) == 0 {
 		return ""
 	}
 
-	s := sb.String()
+	var sb strings.Builder
 
-	return s[:len(s)-1]
+	for i, ident := range p {
+		if i > 0 {
+			sb.WriteRune('.')
+		}
+
+		val := ident.Value()
+		switch v := val.(type) {
+		case uint64:
+			sb.WriteString(strconv.FormatUint(v, 10))
+		case string:
+			sb.WriteString(v)
+		default:
+			// Internal invariant violation.
+			panic(fmt.Sprintf("invalid pre-release identifier option: %[1]v (%[1]T)", val))
+		}
+	}
+
+	return sb.String()
 }
 
 // String returns the string representation of the BuildIdentifiers b.
 func (b BuildIdentifiers) String() string {
-	var sb strings.Builder
-
-	if len(b) > 0 {
-		for _, s := range b {
-			sb.WriteString(s)
-			sb.WriteRune('.')
-		}
-	} else {
+	if len(b) == 0 {
 		return ""
 	}
 
-	s := sb.String()
+	var sb strings.Builder
 
-	return s[:len(s)-1]
+	for i, s := range b {
+		if i > 0 {
+			sb.WriteRune('.')
+		}
+
+		sb.WriteString(s)
+	}
+
+	return sb.String()
 }
 
 // Equal tells if the given BuildIdentifiers b are equal to o.
