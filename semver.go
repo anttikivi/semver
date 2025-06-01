@@ -34,7 +34,7 @@ type Version struct {
 	Minor      uint64
 	Patch      uint64
 	Prerelease Prerelease
-	Build      BuildIdentifiers
+	Build      Build
 }
 
 // A Prerelease holds the pre-release identifiers of a version.
@@ -72,8 +72,8 @@ type PrereleaseIdentifier interface {
 	Value() any
 }
 
-// BuildIdentifiers is a list of build identifiers in the Version.
-type BuildIdentifiers []string
+// Build is a list of build identifiers in the Version.
+type Build []string
 
 type alphanumericIdentifier struct {
 	v string
@@ -127,78 +127,6 @@ func ParseLax(s string) (*Version, error) {
 	}
 
 	return v, nil
-}
-
-// NewPrerelease creates new [Prerelease] from the given elements. The elements
-// must be strings or ints.
-func NewPrerelease(a ...any) (Prerelease, error) {
-	identifiers := make(Prerelease, 0, len(a))
-
-	for _, v := range a {
-		switch u := v.(type) {
-		case int:
-			if u < 0 {
-				return nil, fmt.Errorf("%w: %v", errInvalidPrereleaseIdent, v)
-			}
-
-			identifiers = append(identifiers, numericIdentifier{uint64(u)})
-		case uint64:
-			identifiers = append(identifiers, numericIdentifier{u})
-		case string:
-			if !isASCII(u) {
-				return nil, fmt.Errorf(
-					"%w: identifier %q contains non-ASCII characters",
-					errInvalidPrereleaseIdent,
-					u,
-				)
-			}
-
-			p, err := parsePrereleaseIdentifier(u)
-			if err != nil {
-				return nil, fmt.Errorf("cannot create Prerelease: %w", err)
-			}
-
-			identifiers = append(identifiers, p)
-		default:
-			return nil, fmt.Errorf("%w: %v", errInvalidPrereleaseIdent, v)
-		}
-	}
-
-	return identifiers, nil
-}
-
-// ParsePrerelease parses the given string into a Prerelease, separating
-// the identifiers at dots.
-func ParsePrerelease(s string) (Prerelease, error) {
-	if !isASCII(s) {
-		return nil, fmt.Errorf(
-			"%w: identifier %q contains non-ASCII characters",
-			errInvalidPrereleaseIdent,
-			s,
-		)
-	}
-
-	parts := strings.Split(s, ".")
-	prerelease := make(Prerelease, 0, len(parts))
-
-	for _, v := range parts {
-		p, err := parsePrereleaseIdentifier(v)
-		if err != nil {
-			return nil, fmt.Errorf("parsing prerelease %q failed: %w", s, err)
-		}
-
-		prerelease = append(prerelease, p)
-	}
-
-	return prerelease, nil
-}
-
-// NewBuildIdentifiers returns new [BuildIdentifiers] for the given strings.
-func NewBuildIdentifiers(s ...string) BuildIdentifiers {
-	b := make(BuildIdentifiers, 0, len(s))
-	b = append(b, s...)
-
-	return b
 }
 
 // Compare returns
@@ -368,7 +296,7 @@ func (p Prerelease) String() string {
 }
 
 // String returns the string representation of the BuildIdentifiers b.
-func (b BuildIdentifiers) String() string {
+func (b Build) String() string {
 	if len(b) == 0 {
 		return ""
 	}
@@ -387,7 +315,7 @@ func (b BuildIdentifiers) String() string {
 }
 
 // Equal tells if the given BuildIdentifiers b are equal to o.
-func (b BuildIdentifiers) Equal(o BuildIdentifiers) bool {
+func (b Build) Equal(o Build) bool {
 	return slices.Equal(b, o)
 }
 
@@ -658,7 +586,7 @@ func parse(s string, minCore int) (*Version, error) {
 		pos = i
 	}
 
-	var build BuildIdentifiers
+	var build Build
 
 	if pos < len(s) && s[pos] == '+' {
 		// Move past the '+'.
@@ -677,6 +605,92 @@ func parse(s string, minCore int) (*Version, error) {
 		Prerelease: prerelease,
 		Build:      build,
 	}, nil
+}
+
+// newPrerelease creates new [Prerelease] from the given elements. The elements
+// must be strings or ints.
+func newPrerelease(a ...any) (Prerelease, error) {
+	identifiers := make(Prerelease, 0, len(a))
+
+	for _, v := range a {
+		switch u := v.(type) {
+		case int:
+			if u < 0 {
+				return nil, fmt.Errorf("%w: %v", errInvalidPrereleaseIdent, v)
+			}
+
+			identifiers = append(identifiers, numericIdentifier{uint64(u)})
+		case uint64:
+			identifiers = append(identifiers, numericIdentifier{u})
+		case string:
+			if !isASCII(u) {
+				return nil, fmt.Errorf(
+					"%w: identifier %q contains non-ASCII characters",
+					errInvalidPrereleaseIdent,
+					u,
+				)
+			}
+
+			p, err := parsePrereleaseIdentifier(u)
+			if err != nil {
+				return nil, fmt.Errorf("cannot create Prerelease: %w", err)
+			}
+
+			identifiers = append(identifiers, p)
+		default:
+			return nil, fmt.Errorf("%w: %v", errInvalidPrereleaseIdent, v)
+		}
+	}
+
+	return identifiers, nil
+}
+
+//nolint:ireturn // interface return is needed
+func parsePrereleaseIdentifier(s string) (PrereleaseIdentifier, error) {
+	if s == "" {
+		return nil, fmt.Errorf("%w: identifier is an empty string", errInvalidPrereleaseIdent)
+	}
+
+	// Check the case for single zero early.
+	if s == "0" {
+		return numericIdentifier{0}, nil
+	}
+
+	switch {
+	case isNumericIdentifier(s):
+		// If this is a numeric identifier and the first character is zero, we
+		// already know that the length is greater than 1 as the case for that
+		// was checked at the start.
+		if s[0] == '0' {
+			return nil, fmt.Errorf(
+				"%w: numeric identifier with a leading zero: %s",
+				errInvalidPrereleaseIdent,
+				s,
+			)
+		}
+
+		u, err := strconv.ParseUint(s, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf(
+				"failed to convert pre-release identifier to integer: %w",
+				err,
+			)
+		}
+
+		return numericIdentifier{u}, nil
+	case isAlphanumericIdentifier(s):
+		return alphanumericIdentifier{s}, nil
+	default:
+		return nil, fmt.Errorf("%w: %s", errInvalidPrereleaseIdent, s)
+	}
+}
+
+// newBuild returns new [Build] for the given strings.
+func newBuild(s ...string) Build {
+	b := make(Build, 0, len(s))
+	b = append(b, s...)
+
+	return b
 }
 
 // checkPrefix parses the possible "v" prefix for the version string.
@@ -803,44 +817,4 @@ func parseBuild(s string) ([]string, error) {
 	}
 
 	return result, nil
-}
-
-//nolint:ireturn // interface return is needed
-func parsePrereleaseIdentifier(s string) (PrereleaseIdentifier, error) {
-	if s == "" {
-		return nil, fmt.Errorf("%w: identifier is an empty string", errInvalidPrereleaseIdent)
-	}
-
-	// Check the case for single zero early.
-	if s == "0" {
-		return numericIdentifier{0}, nil
-	}
-
-	switch {
-	case isNumericIdentifier(s):
-		// If this is a numeric identifier and the first character is zero, we
-		// already know that the length is greater than 1 as the case for that
-		// was checked at the start.
-		if s[0] == '0' {
-			return nil, fmt.Errorf(
-				"%w: numeric identifier with a leading zero: %s",
-				errInvalidPrereleaseIdent,
-				s,
-			)
-		}
-
-		u, err := strconv.ParseUint(s, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf(
-				"failed to convert pre-release identifier to integer: %w",
-				err,
-			)
-		}
-
-		return numericIdentifier{u}, nil
-	case isAlphanumericIdentifier(s):
-		return alphanumericIdentifier{s}, nil
-	default:
-		return nil, fmt.Errorf("%w: %s", errInvalidPrereleaseIdent, s)
-	}
 }

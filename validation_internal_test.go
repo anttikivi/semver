@@ -1,15 +1,6 @@
-package semver_test
+package semver
 
-import (
-	"regexp"
-	"testing"
-
-	"github.com/anttikivi/semver"
-)
-
-const rawVersionRegex = `^v?(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$`
-
-var versionRegex *regexp.Regexp
+import "testing"
 
 var (
 	isValidRegexTests []validationTestCase
@@ -23,8 +14,6 @@ type validationTestCase struct {
 }
 
 func init() {
-	versionRegex = regexp.MustCompile(rawVersionRegex)
-
 	for prefix, allowed := range testPrefixes {
 		for _, t := range baseTests {
 			input := prefix + t.v
@@ -60,7 +49,7 @@ func BenchmarkIsValid(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
 	for range b.N {
-		_ = semver.IsValid(test)
+		_ = IsValid(test)
 	}
 }
 
@@ -68,7 +57,7 @@ func BenchmarkIsValidShorter(b *testing.B) {
 	test := "1.2.11"
 
 	for range b.N {
-		_ = semver.IsValid(test)
+		_ = IsValid(test)
 	}
 }
 
@@ -102,7 +91,7 @@ func TestIsValid(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			if ok := semver.IsValid(tt.v); ok != tt.want {
+			if ok := IsValid(tt.v); ok != tt.want {
 				t.Errorf("IsValid(%q) = %v, want %v", tt.v, ok, !ok)
 			}
 		})
@@ -121,7 +110,7 @@ func TestIsValidLax(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			if ok := semver.IsValidLax(tt.v); ok != tt.want {
+			if ok := IsValidLax(tt.v); ok != tt.want {
 				t.Errorf("IsValidLax(%q) = %v, want %v", tt.v, ok, !ok)
 			}
 		})
