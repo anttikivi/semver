@@ -25,11 +25,11 @@ lint: install-golangci-lint
 
 .PHONY: test
 test:
-	go test $(GOFLAGS) ./...
+	go test $(GOFLAGS)
 
 .PHONY: bench
 bench:
-	go test $(GOFLAGS) -bench=. ./...
+	go test $(GOFLAGS) -bench=.
 
 # ============================================================================ #
 # DEVELOPMENT & BUILDING
@@ -44,6 +44,16 @@ tidy: install-gci install-gofumpt install-golines
 
 .PHONY: fmt
 fmt: tidy
+
+.PHONY: fuzz
+fuzz:
+	@fuzztime="$(FUZZTIME)"; \
+	if [ -z "$${fuzztime}" ]; then \
+		fuzztime="15s"; \
+	fi; \
+	echo "Running fuzz tests for $${fuzztime}"; \
+	go test $(GOFLAGS) -fuzz="^FuzzParse$$" -fuzztime="$${fuzztime}"; \
+	go test $(GOFLAGS) -fuzz=FuzzParseLax -fuzztime="$${fuzztime}"
 
 # ============================================================================ #
 # TOOL HELPERS
