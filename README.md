@@ -106,6 +106,20 @@ The above code would print:
 2.0.0
 ```
 
+## Security
+
+This code should be safe to use in a project and to ensure that, security is an
+important consideration for the project. It includes tooling to help with
+securing the code, like fuzz testing, the
+[CodeQL](https://github.com/anttikivi/semver/actions/workflows/codeql.yml), and
+strict
+[Golangci-lint](https://github.com/anttikivi/semver/blob/main/.golangci.yml)
+ruleset.
+
+If you think you have found a security vulnerability, please disclose it
+privately according to the
+[security policy](https://github.com/anttikivi/semver/security/policy).
+
 ## License
 
 Copyright (c) 2024 Antti Kivi
