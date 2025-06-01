@@ -899,10 +899,180 @@ func FuzzParse(f *testing.F) {
 			t.Errorf("Parse(%q) returned an error but the error string was empty", a)
 		}
 
-		if errors.Is(err, ErrUnknown) {
+		if !errors.Is(err, ErrInvalidVersion) && !errors.Is(err, strconv.ErrRange) {
 			t.Errorf(
-				"Parse(%q) returned a parser error which indicates an error within the parser",
+				"Parse(%q) returned an error other than ErrInvalidVersion, which indicates an error within the parser: %v",
 				a,
+				err,
+			)
+		}
+	})
+}
+
+func FuzzParseLax(f *testing.F) {
+	f.Add("1.0.0")
+	f.Add("v2.3.4")
+	f.Add("0.0.1")
+	f.Add("10.20.30")
+	f.Add("1.2.3-alpha")
+	f.Add("1.2.3-alpha.1")
+	f.Add("1.2.3-0.3.7")
+	f.Add("1.2.3-x.7.z.92")
+	f.Add("1.2.3+build")
+	f.Add("1.2.3+build.123")
+	f.Add("1.2.3-beta+exp.sha.5114f85")
+	f.Add("1.0.0-alpha+001")
+	f.Add("1.0.0+001")
+	f.Add("1.0.0-0.3.7+build")
+
+	f.Add("")
+	f.Add("v")
+	f.Add("1")
+	f.Add("1.2")
+	f.Add("1.2.3.4")
+	f.Add("a.b.c")
+	f.Add("1.0.0-alpha..1")
+	f.Add("1.0.0-alpha_beta")
+	f.Add("1.0.0+build..meta")
+	f.Add("1.0.0+build_meta")
+	f.Add("1.0.0-01")
+	f.Add("01.0.0")
+	f.Add("1.01.0")
+	f.Add("1.0.01")
+	f.Add("1.2.3--")
+	f.Add("1.2.3-+")
+	f.Add("1.2.3++")
+	f.Add("1.2.3+ ")
+	f.Add("1.2.3- ")
+	f.Add(
+		strings.Repeat("1", 100) + "." + strings.Repeat("2", 100) + "." + strings.Repeat("3", 100),
+	)
+	f.Add("1.2.3-" + strings.Repeat("a", 200))
+	f.Add("1.2.3+" + strings.Repeat("b", 200))
+
+	for _, tt := range baseTests {
+		f.Add(tt.v)
+	}
+
+	f.Fuzz(func(t *testing.T, a string) { //nolint:varnamelen // standard param name
+		v, err := ParseLax(a)
+		if err == nil { //nolint:nestif // must be complex
+			if v == nil {
+				t.Errorf("ParseLax(%q) returned nil error and a nil version", a)
+
+				return
+			}
+
+			s := v.String()
+
+			v2, err2 := Parse(s)
+			if err2 != nil {
+				t.Errorf(
+					"Parse(v.String()) failed for original %q (v.String() = %q): %v",
+					a,
+					s,
+					err2,
+				)
+
+				return
+			}
+
+			if !v.Equal(v2) {
+				t.Errorf(
+					"Parse(v.String()) resulted in non-equal version for %q\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					a,
+					v,
+					s,
+					v2,
+				)
+			}
+
+			if !v.StrictEqual(v2) {
+				t.Errorf(
+					"Parse(v.String()) resulted in non-strictly-equal version for %q\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					a,
+					v,
+					s,
+					v2,
+				)
+			}
+
+			if v.Compare(v2) != 0 {
+				t.Errorf("v.Compare(%+v) != 0 for %q, parsed: %+v", v2, a, v)
+			}
+
+			v3, err3 := ParseLax(s)
+			if err3 != nil {
+				t.Errorf(
+					"Parse(v.String()) failed for original %q (v.String() = %q): %v",
+					a,
+					s,
+					err3,
+				)
+
+				return
+			}
+
+			if !v.Equal(v3) {
+				t.Errorf(
+					"ParseLax(v.String()) resulted in non-equal version for %q\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					a,
+					v,
+					s,
+					v3,
+				)
+			}
+
+			if !v2.Equal(v3) {
+				t.Errorf(
+					"ParseLax(v.String()) resulted in non-equal version for %q\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					a,
+					v2,
+					s,
+					v3,
+				)
+			}
+
+			if !v.StrictEqual(v3) {
+				t.Errorf(
+					"ParseLax(v.String()) resulted in non-strictly-equal version for %q\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					a,
+					v,
+					s,
+					v3,
+				)
+			}
+
+			if !v2.StrictEqual(v3) {
+				t.Errorf(
+					"ParseLax(v.String()) resulted in non-strictly-equal version for %q\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					a,
+					v2,
+					s,
+					v3,
+				)
+			}
+
+			if v.Compare(v3) != 0 {
+				t.Errorf("v.Compare(%+v) != 0 for %q, parsed: %+v", v3, a, v)
+			}
+
+			if v2.Compare(v3) != 0 {
+				t.Errorf("v2.Compare(%+v) != 0 for %q, parsed: %+v", v3, a, v2)
+			}
+
+			return
+		}
+
+		if err.Error() == "" {
+			t.Errorf("Parse(%q) returned an error but the error string was empty", a)
+		}
+
+		if !errors.Is(err, ErrInvalidVersion) && !errors.Is(err, strconv.ErrRange) {
+			t.Errorf(
+				"Parse(%q) returned an error other than ErrInvalidVersion, which indicates an error within the parser: %v",
+				a,
+				err,
 			)
 		}
 	})

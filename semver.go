@@ -20,11 +20,9 @@ var (
 	// they encounter invalid version string.
 	ErrInvalidVersion = errors.New("invalid semantic version")
 
-	// ErrUnknown is returned when there is a problem with the parsing that is not
+	// ErrParser is returned when there is a problem with the parsing that is not
 	// directly related to the caller giving an invalid string.
-	ErrUnknown = errors.New("parsing failed")
-
-	errInvalidPrereleaseIdent = errors.New("invalid pre-release identifier")
+	ErrParser = errors.New("parsing failed")
 )
 
 // A Version is a parsed instance of a version number that adheres to the
@@ -295,7 +293,7 @@ func Compare(v, w *Version) int {
 //nolint:cyclop,funlen,gocognit // TODO: see if worth fixing
 func parse(s string, minCore int) (*Version, error) {
 	if s == "" {
-		return nil, fmt.Errorf("empty string: %w", ErrInvalidVersion)
+		return nil, fmt.Errorf("%w: empty string", ErrInvalidVersion)
 	}
 
 	if !isASCII(s) {
@@ -365,8 +363,8 @@ func parse(s string, minCore int) (*Version, error) {
 			patch = u
 		default:
 			return nil, fmt.Errorf(
-				"%w: index when checking version number is out of bounds: %d",
-				ErrUnknown,
+				"%w: index for checking version number is out of bounds: %d",
+				ErrParser,
 				j,
 			)
 		}
@@ -440,7 +438,7 @@ func newPrerelease(a ...any) (Prerelease, error) {
 		switch u := v.(type) {
 		case int:
 			if u < 0 {
-				return nil, fmt.Errorf("%w: %v", errInvalidPrereleaseIdent, v)
+				return nil, fmt.Errorf("%w: %v", ErrInvalidVersion, v)
 			}
 
 			identifiers = append(identifiers, numericIdentifier{uint64(u)})
@@ -450,7 +448,7 @@ func newPrerelease(a ...any) (Prerelease, error) {
 			if !isASCII(u) {
 				return nil, fmt.Errorf(
 					"%w: identifier %q contains non-ASCII characters",
-					errInvalidPrereleaseIdent,
+					ErrInvalidVersion,
 					u,
 				)
 			}
@@ -462,7 +460,7 @@ func newPrerelease(a ...any) (Prerelease, error) {
 
 			identifiers = append(identifiers, p)
 		default:
-			return nil, fmt.Errorf("%w: %v", errInvalidPrereleaseIdent, v)
+			return nil, fmt.Errorf("%w: %v", ErrInvalidVersion, v)
 		}
 	}
 
@@ -472,7 +470,7 @@ func newPrerelease(a ...any) (Prerelease, error) {
 //nolint:ireturn // interface return is needed
 func parsePrereleaseIdentifier(s string) (PrereleaseIdentifier, error) {
 	if s == "" {
-		return nil, fmt.Errorf("%w: identifier is an empty string", errInvalidPrereleaseIdent)
+		return nil, fmt.Errorf("%w: identifier is an empty string", ErrInvalidVersion)
 	}
 
 	// Check the case for single zero early.
@@ -488,7 +486,7 @@ func parsePrereleaseIdentifier(s string) (PrereleaseIdentifier, error) {
 		if s[0] == '0' {
 			return nil, fmt.Errorf(
 				"%w: numeric identifier with a leading zero: %s",
-				errInvalidPrereleaseIdent,
+				ErrInvalidVersion,
 				s,
 			)
 		}
@@ -505,7 +503,7 @@ func parsePrereleaseIdentifier(s string) (PrereleaseIdentifier, error) {
 	case isAlphanumericIdentifier(s):
 		return alphanumericIdentifier{s}, nil
 	default:
-		return nil, fmt.Errorf("%w: %s", errInvalidPrereleaseIdent, s)
+		return nil, fmt.Errorf("%w: %s", ErrInvalidVersion, s)
 	}
 }
 
@@ -737,17 +735,14 @@ func parseBuild(s string) ([]string, error) {
 	result := strings.Split(s, ".")
 	for _, v := range result {
 		if v == "" {
-			return nil, fmt.Errorf(
-				"%w: empty string as a dot-separated build identifier",
-				ErrInvalidVersion,
-			)
+			return nil, fmt.Errorf("%w: empty string as a build identifier", ErrInvalidVersion)
 		}
 
 		// This should be safe as all of the characters in the version must be
 		// ASCII.
 		if !isAlphanumericIdentifier(v) {
 			return nil, fmt.Errorf(
-				"%w: invalid rune in the build identifier %q",
+				"%w: invalid byte in the build identifier %q",
 				ErrInvalidVersion,
 				v,
 			)
