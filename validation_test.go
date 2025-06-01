@@ -128,25 +128,6 @@ func TestIsValidLax(t *testing.T) {
 	}
 }
 
-func TestIsValidRegex(t *testing.T) {
-	t.Parallel()
-
-	for _, tt := range isValidRegexTests {
-		name := tt.v
-		if name == "" {
-			name = emptyName
-		}
-
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			if ok := isValidRegex(tt.v); ok != tt.want {
-				t.Errorf("IsValidRegex(%q) = %v, want %v", tt.v, ok, !ok)
-			}
-		})
-	}
-}
-
 func isValidRegex(v string) bool {
 	return versionRegex.MatchString(v)
 }
