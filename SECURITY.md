@@ -13,4 +13,6 @@ Currently, critical patches are done for all supported minor releases.
 
 ## Reporting a Vulnerability
 
-Please disclose vulnerabilities privately through GitHub’s [private vulnerability reporting](https://github.com/anttikivi/semver/security/advisories). I will get back to you on the disclosure as soon as possible.
+Please disclose vulnerabilities privately through GitHub’s
+[private vulnerability reporting](https://github.com/anttikivi/semver/security/advisories).
+I will get back to you on the disclosure as soon as possible.
