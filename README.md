@@ -22,6 +22,14 @@ the current capabilities of this package include:
 
 The version strings can optionally have a `"v"` prefix.
 
+Future versions of this library will include the following planned features:
+
+- Version ranges and constraints.
+- Wildcard versions.
+- Database compatibility.
+- JSON compatibility.
+- TextMarshaler and TextUnmarshaler compatibility.
+
 ## Install
 
     go get github.com/anttikivi/semver
