@@ -777,6 +777,14 @@ func BenchmarkParse(b *testing.B) {
 	}
 }
 
+func BenchmarkParseLax(b *testing.B) {
+	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
+
+	for range b.N {
+		_, _ = ParseLax(test)
+	}
+}
+
 // To test whether using regexes is faster, looks like its not.
 func BenchmarkParseRegex(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
