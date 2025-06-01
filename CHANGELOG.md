@@ -20,6 +20,9 @@ This project adheres to
 - `Compare` and `Version.Compare` for comparing versions.
 - `Versions` slice type the is a slice of `*Version` and implements
   `sort.Interface` for sorting version numbers.
+- `ErrInvalidVersion` that is returned when the user tries to parse an invalid
+  version string.
+- `ErrParser` that is returned when there is a problem with the parser.
 
 ### Changed
 
