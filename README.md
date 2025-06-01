@@ -22,13 +22,15 @@ the current capabilities of this package include:
 
 The version strings can optionally have a `"v"` prefix.
 
-Future versions of this library will include the following planned features:
+Future versions of this library will probably include the following planned
+features:
 
 - Version ranges and constraints.
 - Wildcard versions.
 - Database compatibility.
 - JSON compatibility.
 - TextMarshaler and TextUnmarshaler compatibility.
+- See how the parser could be made faster.
 
 ## Install
 
@@ -42,7 +44,7 @@ version strings may start with a `v` prefix.
 ### Parsing versions
 
 The package includes two types of functions for parsing versions. There are the
-`Parse` and `ParseLax` function. `Parse` parses only full valid version strings
+`Parse` and `ParseLax` functions. `Parse` parses only full valid version strings
 like `"1.2.3"`, `"1.2.3-beta.1"`, or `"1.2.3-beta.1+darwin.amd64"`. `ParseLax`
 works otherwise like `Parse` but it tries to coerse incomplete core version into
 a full version. For example, it parses `"v1"` as `1.0.0` and `"1.2-beta"` as
@@ -59,17 +61,50 @@ The package also offers `MustParse` and `MustParseLax` variants of these
 functions. They are otherwise the same but only return the pointer to `Version`.
 They panic on errors.
 
-**`Parse`**
+### Validating version strings
 
-As you’d expect, this function takes a version string and parses it into a
-`Version`. To use a custom prefix, use the `ParsePrefix` function. To panic
-instead of returning an error on failure, use `MustParse` or `MustParsePrefix`
-functions.
+The package includes two functions, similar to the parsing functions, for
+checking if a string is a valid version string. The functions are `IsValid` and
+`IsValidLax` and they return a single boolean value. The return value is
+analogous to whether the matching parsing function would parse the given string.
 
-**`IsValid`**
+Example usage:
 
-Checks if the given string is a valid version string. To use a custom prefix,
-use the `IsValidPrefix` function.
+```go
+ok := semver.IsValid("1.2.3-beta.1")
+```
+
+### Sorting versions
+
+The package contains the `Versions` type that supports sorting using the Go
+standard library `sort` package. `Versions` is defined as `[]*Version`.
+
+Example usage:
+
+```go
+a := []string{"1.2.3", "1.0", "1.3", "2", "0.4.2"}
+slice := make(Versions, len(a))
+
+for i, s := range {
+  slice[i] = semver.MustParseLax(s)
+}
+
+sort.Sort(slice)
+
+for _, v := range slice {
+  fmt.Println(v.String())
+}
+```
+
+The above code would print:
+
+```
+0.4.2
+1.0.0
+1.2.3
+1.3.0
+2.0.0
+```
 
 ## License
 
