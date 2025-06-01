@@ -52,24 +52,20 @@ type PrereleaseIdentifier interface {
 	// for pre-release identifiers.
 	Compare(o PrereleaseIdentifier) int
 
-	// Equal tells if the given prereleaseIdentifier is equal to this one.
+	// Equal tells if the given PrereleaseIdentifier is equal to this one.
 	Equal(o PrereleaseIdentifier) bool
 
-	// IsAlphanumericIdentifier reports whether this prereleaseIdentifier is
-	// alphanumeric.
-	IsAlphanumericIdentifier() bool
+	// IsAlphanumeric reports whether this PrereleaseIdentifier is alphanumeric.
+	IsAlphanumeric() bool
 
-	// IsNumericIdentifier reports whether this prereleaseIdentifier is numeric.
-	IsNumericIdentifier() bool
+	// IsNumeric reports whether this PrereleaseIdentifier is numeric.
+	IsNumeric() bool
 
 	// Len returns the length of the pre-release identifier in characters.
 	Len() int
 
 	// String returns the string representation of the identifier.
 	String() string
-
-	// Value returns the Value for the identifier.
-	Value() any
 }
 
 // Build is a list of build identifiers in the Version.
@@ -280,22 +276,26 @@ func (p Prerelease) String() string {
 			sb.WriteRune('.')
 		}
 
-		val := ident.Value()
-		switch v := val.(type) {
-		case uint64:
-			sb.WriteString(strconv.FormatUint(v, 10))
-		case string:
-			sb.WriteString(v)
+		switch v := ident.(type) {
+		case alphanumericIdentifier:
+			sb.WriteString(v.v)
+		case numericIdentifier:
+			sb.WriteString(strconv.FormatUint(v.v, 10))
 		default:
 			// Internal invariant violation.
-			panic(fmt.Sprintf("invalid pre-release identifier option: %[1]v (%[1]T)", val))
+			panic(fmt.Sprintf("invalid pre-release identifier option: %[1]v (%[1]T)", v))
 		}
 	}
 
 	return sb.String()
 }
 
-// String returns the string representation of the BuildIdentifiers b.
+// Equal tells if the given Build b is equal to o.
+func (b Build) Equal(o Build) bool {
+	return slices.Equal(b, o)
+}
+
+// String returns the string representation of the Build b.
 func (b Build) String() string {
 	if len(b) == 0 {
 		return ""
@@ -314,11 +314,6 @@ func (b Build) String() string {
 	return sb.String()
 }
 
-// Equal tells if the given BuildIdentifiers b are equal to o.
-func (b Build) Equal(o Build) bool {
-	return slices.Equal(b, o)
-}
-
 // Compare returns
 //
 //	-1 if this identifier is less than o,
@@ -329,7 +324,7 @@ func (b Build) Equal(o Build) bool {
 // pre-release identifiers.
 func (i alphanumericIdentifier) Compare(o PrereleaseIdentifier) int {
 	// Alphanumeric identifiers always have higher precedence than numeric ones.
-	if o.IsNumericIdentifier() {
+	if o.IsNumeric() {
 		return 1
 	}
 
@@ -349,27 +344,16 @@ func (i alphanumericIdentifier) Equal(o PrereleaseIdentifier) bool {
 		return false
 	}
 
-	a, ok := i.Value().(string)
-	if !ok {
-		panic(fmt.Sprintf("failed to convert %[1]v (%[1]T) to string", i.Value()))
-	}
-
-	b, ok := other.Value().(string)
-	if !ok {
-		panic(fmt.Sprintf("failed to convert %[1]v (%[1]T) to string", other.Value()))
-	}
-
-	return a == b
+	return i.v == other.v
 }
 
-// IsAlphanumericIdentifier reports whether this prereleaseIdentifier is
-// alphanumeric.
-func (i alphanumericIdentifier) IsAlphanumericIdentifier() bool {
+// IsAlphanumeric reports whether this PrereleaseIdentifier is alphanumeric.
+func (i alphanumericIdentifier) IsAlphanumeric() bool {
 	return true
 }
 
-// IsNumericIdentifier reports whether this prereleaseIdentifier is numeric.
-func (i alphanumericIdentifier) IsNumericIdentifier() bool {
+// IsNumeric reports whether this PrereleaseIdentifier is numeric.
+func (i alphanumericIdentifier) IsNumeric() bool {
 	return false
 }
 
@@ -383,11 +367,6 @@ func (i alphanumericIdentifier) String() string {
 	return i.v
 }
 
-// Value returns the Value for the identifier.
-func (i alphanumericIdentifier) Value() any {
-	return i.v
-}
-
 // Compare returns
 //
 //	-1 if this identifier is less than o,
@@ -398,7 +377,7 @@ func (i alphanumericIdentifier) Value() any {
 // pre-release identifiers.
 func (i numericIdentifier) Compare(o PrereleaseIdentifier) int {
 	// Alphanumeric identifiers always have higher precedence than numeric ones.
-	if o.IsAlphanumericIdentifier() {
+	if o.IsAlphanumeric() {
 		return -1
 	}
 
@@ -418,27 +397,16 @@ func (i numericIdentifier) Equal(o PrereleaseIdentifier) bool {
 		return false
 	}
 
-	a, ok := i.Value().(uint64)
-	if !ok {
-		panic(fmt.Sprintf("failed to convert %[1]v (%[1]T) to uint64", i.Value()))
-	}
-
-	b, ok := other.Value().(uint64)
-	if !ok {
-		panic(fmt.Sprintf("failed to convert %[1]v (%[1]T) to uint64", other.Value()))
-	}
-
-	return a == b
+	return i.v == other.v
 }
 
-// IsAlphanumericIdentifier reports whether this prereleaseIdentifier is
-// alphanumeric.
-func (i numericIdentifier) IsAlphanumericIdentifier() bool {
+// IsAlphanumeric reports whether this PrereleaseIdentifier is alphanumeric.
+func (i numericIdentifier) IsAlphanumeric() bool {
 	return false
 }
 
-// IsNumericIdentifier reports whether this prereleaseIdentifier is numeric.
-func (i numericIdentifier) IsNumericIdentifier() bool {
+// IsNumeric reports whether this PrereleaseIdentifier is numeric.
+func (i numericIdentifier) IsNumeric() bool {
 	return true
 }
 
@@ -450,11 +418,6 @@ func (i numericIdentifier) Len() int {
 // String returns the string representation of the identifier.
 func (i numericIdentifier) String() string {
 	return strconv.FormatUint(i.v, 10)
-}
-
-// Value returns the Value for the identifier.
-func (i numericIdentifier) Value() any {
-	return i.v
 }
 
 // Compare returns
@@ -478,7 +441,7 @@ func parse(s string, minCore int) (*Version, error) {
 		return nil, fmt.Errorf("%w: version contains non-ASCII characters", ErrInvalidVersion)
 	}
 
-	pos, err := checkPrefix(s)
+	pos, err := stripPrefix(s)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse the version prefix: %w", err)
 	}
@@ -693,31 +656,6 @@ func newBuild(s ...string) Build {
 	return b
 }
 
-// checkPrefix parses the possible "v" prefix for the version string.
-// The function returns the new position where the parsing continues.
-func checkPrefix(s string) (int, error) {
-	pos := 0
-
-	c := s[0]
-	if !isDigit(c) && c != 'v' {
-		return pos, fmt.Errorf(
-			"%w: version %q does not start with a digit or 'v'",
-			ErrInvalidVersion,
-			s,
-		)
-	}
-
-	if c == 'v' {
-		pos++
-	}
-
-	if pos == len(s) {
-		return pos, fmt.Errorf("%w: %q", ErrInvalidVersion, s)
-	}
-
-	return pos, nil
-}
-
 func comparePrereleaseIdentifiers(x, y PrereleaseIdentifier) int {
 	if x == y {
 		return 0
@@ -817,4 +755,29 @@ func parseBuild(s string) ([]string, error) {
 	}
 
 	return result, nil
+}
+
+// stripPrefix parses the possible "v" prefix for the version string.
+// The function returns the new position where the parsing continues.
+func stripPrefix(s string) (int, error) {
+	pos := 0
+
+	c := s[0]
+	if !isDigit(c) && c != 'v' {
+		return pos, fmt.Errorf(
+			"%w: version %q does not start with a digit or 'v'",
+			ErrInvalidVersion,
+			s,
+		)
+	}
+
+	if c == 'v' {
+		pos++
+	}
+
+	if pos == len(s) {
+		return pos, fmt.Errorf("%w: %q", ErrInvalidVersion, s)
+	}
+
+	return pos, nil
 }

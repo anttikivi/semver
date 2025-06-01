@@ -1,7 +1,7 @@
 package semver
 
-// Versions attaches the methods of [sort.Interface] to []*Version, sorting in
-// increasing order.
+// Versions attaches the methods of [sort.Interface] to a version slice, sorting
+// in increasing order.
 type Versions []*Version
 
 // Len is the number of elements in Versions.
