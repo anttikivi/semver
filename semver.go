@@ -175,6 +175,12 @@ func (v *Version) ComparableString() string {
 	return sb.String()
 }
 
+// CoreString returns the core version string representation of the version. It
+// doesn't include the pre-release nor the build metadata.
+func (v *Version) CoreString() string {
+	return fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
+}
+
 // Equal reports whether Version w is equal to v. The two Versions are equal
 // according to this function if all of their parts that are comparable in
 // the semantic versioning specification are equal; this does not include

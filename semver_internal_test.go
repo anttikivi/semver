@@ -839,7 +839,7 @@ func FuzzParse(f *testing.F) {
 		f.Add(tt.v)
 	}
 
-	f.Fuzz(func(t *testing.T, a string) { //nolint:varnamelen // standard param name
+	f.Fuzz(func(t *testing.T, a string) {
 		v, err := Parse(a)
 		if err == nil { //nolint:nestif // must be complex
 			if v == nil {
@@ -962,7 +962,7 @@ func FuzzParseLax(f *testing.F) {
 		f.Add(tt.v)
 	}
 
-	f.Fuzz(func(t *testing.T, a string) { //nolint:varnamelen // standard param name
+	f.Fuzz(func(t *testing.T, a string) {
 		v, err := ParseLax(a)
 		if err == nil { //nolint:nestif // must be complex
 			if v == nil {
@@ -1153,6 +1153,115 @@ func TestMustParse(t *testing.T) {
 			if !tt.want.StrictEqual(got) {
 				t.Errorf("MustParse(%q) = %v, want %v (strictly equal)", tt.v, got, tt.want)
 			}
+
+			s := got.CoreString()
+
+			rv, rerr := Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()), v.CoreString() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			tv := &Version{Major: got.Major, Minor: got.Minor, Patch: got.Patch}
+			if !tv.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()) = %v, v.CoreString() = %s, want %v (equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !tv.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()) = %v, v.CoreString() = %s, want %v (strictly equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			s = got.ComparableString()
+
+			rv, rerr = Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()), v.String() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			tv = &Version{
+				Major:      got.Major,
+				Minor:      got.Minor,
+				Patch:      got.Patch,
+				Prerelease: got.Prerelease,
+			}
+			if !tv.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.ComparableString()) = %v, v.ComparableString() = %s, want %v (equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !tv.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.ComparableString()) = %v, v.ComparableString() = %s, want %v (strictly equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			s = got.String()
+
+			rv, rerr = Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()), v.String() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			if !got.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()) = %v, v.String() = %s, want %v (equal)",
+					got,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !got.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()) = %v, v.String() = %s, want %v (strictly equal)",
+					got,
+					rv,
+					s,
+					got,
+				)
+			}
 		})
 	}
 }
@@ -1197,6 +1306,115 @@ func TestMustParseLax(t *testing.T) {
 
 			if !tt.want.StrictEqual(got) {
 				t.Errorf("MustParseLax(%q) = %v, want %v (strictly equal)", tt.v, got, tt.want)
+			}
+
+			s := got.CoreString()
+
+			rv, rerr := Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()), v.CoreString() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			tv := &Version{Major: got.Major, Minor: got.Minor, Patch: got.Patch}
+			if !tv.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()) = %v, v.CoreString() = %s, want %v (equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !tv.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()) = %v, v.CoreString() = %s, want %v (strictly equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			s = got.ComparableString()
+
+			rv, rerr = Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()), v.String() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			tv = &Version{
+				Major:      got.Major,
+				Minor:      got.Minor,
+				Patch:      got.Patch,
+				Prerelease: got.Prerelease,
+			}
+			if !tv.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.ComparableString()) = %v, v.ComparableString() = %s, want %v (equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !tv.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.ComparableString()) = %v, v.ComparableString() = %s, want %v (strictly equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			s = got.String()
+
+			rv, rerr = Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()), v.String() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			if !got.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()) = %v, v.String() = %s, want %v (equal)",
+					got,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !got.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()) = %v, v.String() = %s, want %v (strictly equal)",
+					got,
+					rv,
+					s,
+					got,
+				)
 			}
 		})
 	}
@@ -1246,6 +1464,115 @@ func TestParse(t *testing.T) {
 			if !tt.want.StrictEqual(got) {
 				t.Errorf("Parse(%q) = %v, want %v (strictly equal)", tt.v, got, tt.want)
 			}
+
+			s := got.CoreString()
+
+			rv, rerr := Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()), v.CoreString() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			tv := &Version{Major: got.Major, Minor: got.Minor, Patch: got.Patch}
+			if !tv.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()) = %v, v.CoreString() = %s, want %v (equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !tv.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()) = %v, v.CoreString() = %s, want %v (strictly equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			s = got.ComparableString()
+
+			rv, rerr = Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()), v.String() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			tv = &Version{
+				Major:      got.Major,
+				Minor:      got.Minor,
+				Patch:      got.Patch,
+				Prerelease: got.Prerelease,
+			}
+			if !tv.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.ComparableString()) = %v, v.ComparableString() = %s, want %v (equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !tv.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.ComparableString()) = %v, v.ComparableString() = %s, want %v (strictly equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			s = got.String()
+
+			rv, rerr = Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()), v.String() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			if !got.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()) = %v, v.String() = %s, want %v (equal)",
+					got,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !got.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()) = %v, v.String() = %s, want %v (strictly equal)",
+					got,
+					rv,
+					s,
+					got,
+				)
+			}
 		})
 	}
 }
@@ -1294,6 +1621,115 @@ func TestParseLax(t *testing.T) {
 			if !tt.want.StrictEqual(got) {
 				t.Errorf("ParseLax(%q) = %v, want %v (strictly equal)", tt.v, got, tt.want)
 			}
+
+			s := got.CoreString()
+
+			rv, rerr := Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()), v.CoreString() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			tv := &Version{Major: got.Major, Minor: got.Minor, Patch: got.Patch}
+			if !tv.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()) = %v, v.CoreString() = %s, want %v (equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !tv.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.CoreString()) = %v, v.CoreString() = %s, want %v (strictly equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			s = got.ComparableString()
+
+			rv, rerr = Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()), v.String() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			tv = &Version{
+				Major:      got.Major,
+				Minor:      got.Minor,
+				Patch:      got.Patch,
+				Prerelease: got.Prerelease,
+			}
+			if !tv.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.ComparableString()) = %v, v.ComparableString() = %s, want %v (equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !tv.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.ComparableString()) = %v, v.ComparableString() = %s, want %v (strictly equal)",
+					tv,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			s = got.String()
+
+			rv, rerr = Parse(s)
+			if rerr != nil {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()), v.String() = %s, failed unexpectedly: %v",
+					got,
+					s,
+					rerr,
+				)
+
+				return
+			}
+
+			if !got.Equal(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()) = %v, v.String() = %s, want %v (equal)",
+					got,
+					rv,
+					s,
+					got,
+				)
+			}
+
+			if !got.StrictEqual(rv) {
+				t.Errorf(
+					"(round-trip) Parse(%#v.String()) = %v, v.String() = %s, want %v (strictly equal)",
+					got,
+					rv,
+					s,
+					got,
+				)
+			}
 		})
 	}
 }
@@ -1324,7 +1760,7 @@ func TestVersionCompare(t *testing.T) {
 	}
 }
 
-func TestVersionCore(t *testing.T) {
+func TestVersionComparableString(t *testing.T) {
 	t.Parallel()
 
 	for _, tt := range coreStringerTests {
@@ -1350,7 +1786,7 @@ func TestVersionCore(t *testing.T) {
 	}
 }
 
-func TestVersionCoreLax(t *testing.T) {
+func TestVersionComparableStringLax(t *testing.T) {
 	t.Parallel()
 
 	for _, tt := range laxCoreStringerTests {

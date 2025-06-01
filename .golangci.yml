@@ -10,12 +10,14 @@ linters:
       - path: _test\.go
         linters:
           - dupl
+          - exhaustruct
           - funlen
           - gochecknoglobals
           - gochecknoinits
           - gocognit
           - goconst
           - lll
+          - varnamelen
   settings:
     cyclop:
       max-complexity: 20

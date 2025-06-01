@@ -9,8 +9,10 @@ This project adheres to
 
 ### Added
 
+- `Version.CoreString` function that returns the version as a string without the
+  pre-release or the build metadata.
 - `Version.ComparableString` function that returns the version as a string
-  without the build identifiers.
+  without the build metadata.
 - `Version.StrictEqual` function that compares the whole version data to
   determine the equality of two versions, including build metadata.
 - `IsValidLax` for checking if partial version strings are valid.
