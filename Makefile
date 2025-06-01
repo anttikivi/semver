@@ -11,6 +11,9 @@ GOFUMPT_VERSION = 0.8.0
 GOLANGCI_LINT_VERSION = 2.1.6
 GOLINES_VERSION = 0.12.2
 
+COPYRIGHT_HOLDER = Antti Kivi
+LICENSE = mit
+
 # ============================================================================ #
 # QUALITY CONTROL
 # ============================================================================ #
@@ -22,7 +25,7 @@ audit: test lint
 
 .PHONY: lint
 lint: install-addlicense install-golangci-lint
-	addlicense -check -c "Antti Kivi" -l mit *.go
+	addlicense -check -c "$(COPYRIGHT_HOLDER)" -l "$(LICENSE)" *.go
 	golangci-lint run
 
 .PHONY: test
@@ -50,7 +53,7 @@ fuzz:
 
 .PHONY: tidy
 tidy: install-addlicense install-gci install-gofumpt install-golines
-	addlicense -c "Antti Kivi" -l mit *.go
+	addlicense -c "$(COPYRIGHT_HOLDER)" -l "$(LICENSE)" *.go
 	go mod tidy -v
 	gci write .
 	golines --no-chain-split-dots -w .
