@@ -155,4 +155,4 @@ jobs:
           go mod download
 
       - name: Run the benchmarks
-        run: make bench GOFLAGS="-v -benchmem"
+        run: make bench GOFLAGS="-benchmem"
