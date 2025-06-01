@@ -770,6 +770,77 @@ func BenchmarkParseRegex(b *testing.B) {
 	}
 }
 
+func FuzzParse(f *testing.F) {
+	f.Add("1.0.0")
+	f.Add("v2.3.4")
+	f.Add("0.0.1")
+	f.Add("10.20.30")
+	f.Add("1.2.3-alpha")
+	f.Add("1.2.3-alpha.1")
+	f.Add("1.2.3-0.3.7")
+	f.Add("1.2.3-x.7.z.92")
+	f.Add("1.2.3+build")
+	f.Add("1.2.3+build.123")
+	f.Add("1.2.3-beta+exp.sha.5114f85")
+	f.Add("1.0.0-alpha+001")
+	f.Add("1.0.0+001")
+	f.Add("1.0.0-0.3.7+build")
+
+	f.Add("")
+	f.Add("v")
+	f.Add("1")
+	f.Add("1.2")
+	f.Add("1.2.3.4")
+	f.Add("a.b.c")
+	f.Add("1.0.0-alpha..1")
+	f.Add("1.0.0-alpha_beta")
+	f.Add("1.0.0+build..meta")
+	f.Add("1.0.0+build_meta")
+	f.Add("1.0.0-01")
+	f.Add("01.0.0")
+	f.Add("1.01.0")
+	f.Add("1.0.01")
+	f.Add("1.2.3--")
+	f.Add("1.2.3-+")
+	f.Add("1.2.3++")
+	f.Add("1.2.3+ ")
+	f.Add("1.2.3- ")
+	f.Add(strings.Repeat("1", 100) + "." + strings.Repeat("2", 100) + "." + strings.Repeat("3", 100))
+	f.Add("1.2.3-" + strings.Repeat("a", 200))
+	f.Add("1.2.3+" + strings.Repeat("b", 200))
+
+	f.Fuzz(func(t *testing.T, a string) {
+		v, err := semver.Parse(a)
+		if err == nil {
+			if v == nil {
+				t.Errorf("Parse(%q) returned nil error and a nil version", a)
+
+				return
+			}
+
+			s := v.String()
+			v2, err2 := semver.Parse(s)
+			if err2 != nil {
+				t.Errorf("Parse(v.String()) failed for original %q (v.String() = %q): %v", a, s, err2)
+
+				return
+			}
+
+			if !v.Equal(v2) {
+				t.Errorf("Parse(v.String()) resulted in non-equal version for %q.\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v", a, v, s, v2)
+			}
+
+			if !v.StrictEqual(v2) {
+				t.Errorf("Parse(v.String()) resulted in non-strictly-equal version for %q.\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v", a, v, s, v2)
+			}
+
+			if v.Compare(v2) != 0 {
+				t.Errorf("v.Compare(%+v) != 0 for %q, parsed: %+v", v2, a, v)
+			}
+		}
+	})
+}
+
 func TestCompare(t *testing.T) {
 	t.Parallel()
 
