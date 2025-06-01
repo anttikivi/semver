@@ -117,3 +117,42 @@ jobs:
 
       - name: Run the tests
         run: make test GOFLAGS="-race -v"
+
+  bench:
+    name: Benchmarks
+    if:
+      "!contains(github.event.head_commit.message, '[ci skip]') &&
+      !contains(github.event.head_commit.message, '[skip ci]') &&
+      !startsWith(github.event.head_commit.message, 'docs')"
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+
+    steps:
+      - name: Clone the source code
+        uses: actions/checkout@v4.2.2
+
+      - name: Install the Go toolchain
+        uses: actions/setup-go@v5.5.0
+        with:
+          go-version-file: go.mod
+
+      - name: Display the platform information for Go
+        run: |
+          go env GOOS
+          go env GOARCH
+          go version
+
+      - name: Verify and download dependencies
+        run: |
+          go mod verify
+          go mod download
+
+      - name: Run the benchmarks
+        run: make bench GOFLAGS="-v -benchmem"
