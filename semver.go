@@ -1,7 +1,81 @@
-// Package semver is a parser for version strings that adhere to Semantic
-// Versioning 2.0.0. The primary functions to use are [Parse] and [MustParse]
-// which parse the given version string into [Version]. To check if a string
-// is a valid version, you can use the [IsValid] and [IsValidLax] functions.
+/*
+Package semver provides utilities and a parser to work with version numbers that
+adhere to [semantic versioning]. The goal of this parser is to be reliable and
+performant. Reliability is ensured by using a wide range of tests and fuzzing.
+Performance is achieved by implementing a custom parser instead of the common
+alternative: regular expressions.
+
+This package implements [semantic versioning 2.0.0]. Specifically, the current
+capabilities of this package include:
+
+  - Parsing version strings.
+  - Checking if a string is valid version string. This check doesn’t require
+    full parsing of the version.
+  - Comparing versions.
+  - Sorting versions.
+
+The version strings can optionally have a "v" prefix.
+
+# Parsing versions
+
+The package includes two types of functions for parsing versions. There are
+the [Parse] and [ParseLax] functions. [Parse] parses only full valid version
+strings like "1.2.3", "1.2.3-beta.1", or "1.2.3-beta.1+darwin.amd64". [ParseLax]
+works otherwise like [Parse] but it tries to coerse incomplete core version into
+a full version. For example, it parses "v1" as "1.0.0" and "1.2-beta" as
+"1.2.0-beta". Both functions return a pointer to the [Version] object and
+an error.
+
+They can be used as follows:
+
+	v, err := semver.Parse("1.2.3-beta.1")
+
+The package also offers [MustParse] and [MustParseLax] variants of these
+functions. They are otherwise the same but only return the pointer to [Version].
+They panic on errors.
+
+# Validating version strings
+
+The package includes two functions, similar to the parsing functions, for
+checking if a string is a valid version string. The functions are [IsValid] and
+[IsValidLax] and they return a single boolean value. The return value is
+analogous to whether the matching parsing function would parse the given string.
+
+Example usage:
+
+	ok := semver.IsValid("1.2.3-beta.1")
+
+# Sorting versions
+
+The package contains the [Versions] type that supports sorting using the Go
+standard library [sort] package. [Versions] is defined as []*Version.
+
+Example usage:
+
+	a := []string{"1.2.3", "1.0", "1.3", "2", "0.4.2"}
+	slice := make(Versions, len(a))
+
+	for i, s := range {
+		slice[i] = semver.MustParseLax(s)
+	}
+
+	sort.Sort(slice)
+
+	for _, v := range slice {
+		fmt.Println(v.String())
+	}
+
+The above code would print:
+
+	0.4.2
+	1.0.0
+	1.2.3
+	1.3.0
+	2.0.0
+
+[semantic versioning]: https://semver.org
+[semantic versioning 2.0.0]: https://semver.org/spec/v2.0.0.html
+*/
 package semver
 
 import (
