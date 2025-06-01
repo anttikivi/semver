@@ -43,8 +43,9 @@ This project adheres to
   returning an error.
 - Fix `IsValid` accepting version strings that had leading zero.
 - Fix many edge cases in `IsValid` and `IsValidLax`.
+- Add the missing date to the changelog entry for v0.3.0.
 
-## [0.3.0]
+## [0.3.0] - 2025-05-31
 
 ### Changed
 
