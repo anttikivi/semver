@@ -36,14 +36,28 @@ Future versions of this library will include the following planned features:
 
 ## Usage
 
-The module exports a couple of functions to use. The functions accept version
-strings that adhere to the semantic versioning. The version strings may start
-with a `v` prefix.
+The functions accept version strings that adhere to the semantic versioning. The
+version strings may start with a `v` prefix.
 
-The functions also have `Prefix` counterparts that accept one or more prefix
-strings that will be allowed in front of the strings. For example, if you want
-your version strings to have the form `go1.2.3`, you can pass `"go"` as a prefix
-to the prefix version of a function.
+### Parsing versions
+
+The package includes two types of functions for parsing versions. There are the
+`Parse` and `ParseLax` function. `Parse` parses only full valid version strings
+like `"1.2.3"`, `"1.2.3-beta.1"`, or `"1.2.3-beta.1+darwin.amd64"`. `ParseLax`
+works otherwise like `Parse` but it tries to coerse incomplete core version into
+a full version. For example, it parses `"v1"` as `1.0.0` and `"1.2-beta"` as
+`1.2.0-beta`. Both functions return a pointer to the `Version` object and an
+error.
+
+They can be used as follows:
+
+```go
+v, err := semver.Parse("1.2.3-beta.1")
+```
+
+The package also offers `MustParse` and `MustParseLax` variants of these
+functions. They are otherwise the same but only return the pointer to `Version`.
+They panic on errors.
 
 **`Parse`**
 
