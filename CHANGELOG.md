@@ -34,6 +34,8 @@ This project adheres to
 - **BREAKING:** Change the `Prerelease` type to be a simple slice of pre-release
   identifiers.
 - Make `PrereleaseIdentifier` public.
+- Change the lowest required Go version to be `1.22` instead of `1.22.9` for
+  lesser specificity.
 
 ### Removed
 
