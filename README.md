@@ -4,11 +4,23 @@
 [![Godoc](https://godoc.org/github.com/anttikivi/go-semver?status.svg)](https://godoc.org/github.com/anttikivi/go-semver)
 [![Go Report Card](https://goreportcard.com/badge/github.com/anttikivi/go-semver)](https://goreportcard.com/report/github.com/anttikivi/go-semver)
 
-The `go-semver` package provides utilities and a parser to work with version
-numbers that adhere to [semantic versioning](https://semver.org). It is designed
-to perform relatively well compared to common alternatives: the package
-implements custom parser instead of using regular expressions, which seems to be
-faster.
+The `semver` package provides utilities and a parser to work with version
+numbers that adhere to [semantic versioning](https://semver.org). The goal of
+this parser is to be reliable and performant. Reliability is ensured by using a
+wide range of tests and fuzzing. Performance is achieved by implementing a
+custom parser instead of the common alternative: regular expressions.
+
+This package implements
+[semantic versioning 2.0.0](https://semver.org/spec/v2.0.0.html). Specifically,
+the current capabilities of this package include:
+
+- Parsing version strings.
+- Checking if a string is valid version string. This check doesn’t require full
+  parsing of the version.
+- Comparing versions.
+- Sorting versions.
+
+The version strings can optionally have a `"v"` prefix.
 
 ## Install
 
