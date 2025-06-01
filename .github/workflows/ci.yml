@@ -3,6 +3,8 @@ name: CI
 on:
   push:
   pull_request:
+  schedule:
+    - cron: "30 7 * * *" # 7:30 every day
 
 permissions:
   contents: read
@@ -156,3 +158,58 @@ jobs:
 
       - name: Run the benchmarks
         run: make bench GOFLAGS="-benchmem"
+
+  fuzz:
+    name: Fuzz tests
+    if:
+      "!contains(github.event.head_commit.message, '[ci skip]') &&
+      !contains(github.event.head_commit.message, '[skip ci]') &&
+      !startsWith(github.event.head_commit.message, 'docs')"
+    runs-on: ${{ matrix.os }}
+    env:
+      CACHE_KEY: fuzz
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+
+    steps:
+      - name: Clone the source code
+        uses: actions/checkout@v4.2.2
+
+      - name: Install the Go toolchain
+        uses: actions/setup-go@v5.5.0
+        with:
+          cache: false
+          go-version-file: go.mod
+
+      - name: Get Go cache path
+        id: go-cache-path
+        run: echo "go-cache=$(go env GOCACHE)" >> "${GITHUB_OUTPUT}"
+
+      - name: Restore Cache
+        id: cache-restore
+        uses: actions/cache/restore@v4.2.3
+        with:
+          path: ${{ steps.go-cache-path.outputs.go-cache }}
+          key: ${{ env.CACHE_KEY }}
+
+      - name: Make a fuzz
+        run: make fuzz
+
+      - name: Delete previous cache
+        if: ${{ steps.cache-restore.outputs.cache-hit }}
+        continue-on-error: true
+        run: |
+          gh extension install actions/gh-actions-cache
+          gh actions-cache delete "${{ env.CACHE_KEY }}" --confirm
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Save cache
+        uses: actions/cache/save@v4.2.3
+        with:
+          path: ${{ steps.go-cache-path.outputs.go-cache }}
+          key: ${{ env.CACHE_KEY }}
