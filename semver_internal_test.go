@@ -1129,7 +1129,7 @@ func TestVersionCore(t *testing.T) {
 				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
 			}
 
-			got := v.Core()
+			got := v.ComparableString()
 			if got != tt.want {
 				t.Errorf("Version{%q}.Core() = %v, want %v", tt.v, got, tt.want)
 			}
@@ -1155,7 +1155,7 @@ func TestVersionCoreLax(t *testing.T) {
 				t.Fatalf("Setup error: Version is nil for input %q", tt.v)
 			}
 
-			got := v.Core()
+			got := v.ComparableString()
 			if got != tt.want {
 				t.Errorf("ParseLax(%q).Core() = %v, want %v", tt.v, got, tt.want)
 			}

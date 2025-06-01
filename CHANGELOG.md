@@ -9,14 +9,15 @@ This project adheres to
 
 ### Added
 
-- `Version.Core` function that returns the version as a string without the build
-  identifiers.
+- `Version.ComparableString` function that returns the version as a string
+  without the build identifiers.
 - `Version.StrictEqual` function that compares the whole version data to
   determine the equality of two versions, including build metadata.
 - `IsValidLax` for checking if partial version strings are valid.
 - `ParseLax` and `MustParseLax` for parsing partial version strings.
-- `Compare`, `Version.Compare`, and `Prerelease.Compare` for comparing versions
-  and pre-releases respectively.
+- `Compare` and `Version.Compare` for comparing versions.
+- `Versions` slice type the is a slice of `*Version` and implements
+  `sort.Interface` for sorting version numbers.
 
 ### Changed
 

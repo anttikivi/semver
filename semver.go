@@ -1,7 +1,7 @@
 // Package semver is a parser for version strings that adhere to Semantic
 // Versioning 2.0.0. The primary functions to use are [Parse] and [MustParse]
-// which parse the given version strings into [Version]s. To check if a string
-// is a valid version, you can use the [IsValid] function.
+// which parse the given version string into [Version]. To check if a string
+// is a valid version, you can use the [IsValid] and [IsValidLax] functions.
 package semver
 
 import (
@@ -42,7 +42,10 @@ type Prerelease []PrereleaseIdentifier
 
 // A PrereleaseIdentifier is a single pre-release identifier separated by dots.
 type PrereleaseIdentifier interface {
-	// Compare returns
+	// String returns the string representation of the identifier.
+	String() string
+
+	// compare returns
 	//
 	//	-1 if this identifier is less than o,
 	//	 0 if this identifier equals o,
@@ -50,22 +53,19 @@ type PrereleaseIdentifier interface {
 	//
 	// The comparison is done according to the semantic versioning specification
 	// for pre-release identifiers.
-	Compare(o PrereleaseIdentifier) int
+	compare(o PrereleaseIdentifier) int
 
-	// Equal tells if the given PrereleaseIdentifier is equal to this one.
-	Equal(o PrereleaseIdentifier) bool
+	// equal tells if the given PrereleaseIdentifier is equal to this one.
+	equal(o PrereleaseIdentifier) bool
 
-	// IsAlphanumeric reports whether this PrereleaseIdentifier is alphanumeric.
-	IsAlphanumeric() bool
+	// isAlphanumeric reports whether this PrereleaseIdentifier is alphanumeric.
+	isAlphanumeric() bool
 
-	// IsNumeric reports whether this PrereleaseIdentifier is numeric.
-	IsNumeric() bool
+	// isNumeric reports whether this PrereleaseIdentifier is numeric.
+	isNumeric() bool
 
-	// Len returns the length of the pre-release identifier in characters.
-	Len() int
-
-	// String returns the string representation of the identifier.
-	String() string
+	// len returns the length of the pre-release identifier in characters.
+	len() int
 }
 
 // Build is a list of build identifiers in the Version.
@@ -155,12 +155,12 @@ func (v *Version) Compare(w *Version) int {
 		return -1
 	}
 
-	return v.Prerelease.Compare(w.Prerelease)
+	return v.Prerelease.compare(w.Prerelease)
 }
 
-// Core returns the comparable string representation of the version. It doesn't
-// include the build metadata.
-func (v *Version) Core() string {
+// ComparableString returns the comparable string representation of the version.
+// It doesn't include the build metadata.
+func (v *Version) ComparableString() string {
 	var sb strings.Builder
 
 	sb.WriteString(strconv.FormatUint(v.Major, 10))
@@ -177,32 +177,32 @@ func (v *Version) Core() string {
 	return sb.String()
 }
 
-// Equal reports whether Version o is equal to v. The two Versions are equal
+// Equal reports whether Version w is equal to v. The two Versions are equal
 // according to this function if all of their parts that are comparable in
 // the semantic versioning specification are equal; this does not include
 // the build metadata.
-func (v *Version) Equal(o *Version) bool {
-	if o == nil {
+func (v *Version) Equal(w *Version) bool {
+	if w == nil {
 		return v == nil
 	}
 
-	return v.Major == o.Major && v.Minor == o.Minor && v.Patch == o.Patch &&
-		v.Prerelease.Equal(o.Prerelease)
+	return v.Major == w.Major && v.Minor == w.Minor && v.Patch == w.Patch &&
+		v.Prerelease.equal(w.Prerelease)
 }
 
-// StrictEqual reports whether Version o is equal to v. The two Versions are
+// StrictEqual reports whether Version w is equal to v. The two Versions are
 // equal if all of their parts are; this includes the build metadata.
-func (v *Version) StrictEqual(o *Version) bool {
-	if o == nil {
+func (v *Version) StrictEqual(w *Version) bool {
+	if w == nil {
 		return v == nil
 	}
 
-	return v.Major == o.Major && v.Minor == o.Minor && v.Patch == o.Patch &&
-		v.Prerelease.Equal(o.Prerelease) &&
-		v.Build.Equal(o.Build)
+	return v.Major == w.Major && v.Minor == w.Minor && v.Patch == w.Patch &&
+		v.Prerelease.equal(w.Prerelease) &&
+		v.Build.equal(w.Build)
 }
 
-// String returns the string representation of the version.
+// String returns the string representation of v.
 func (v *Version) String() string {
 	var sb strings.Builder
 
@@ -225,45 +225,7 @@ func (v *Version) String() string {
 	return sb.String()
 }
 
-// Compare returns
-//
-//	-1 if p is less than o,
-//	 0 if p equals o,
-//	+1 if p is greater than o.
-//
-// The comparison is done according to the semantic versioning specification for
-// pre-release identifiers.
-func (p Prerelease) Compare(o Prerelease) int {
-	for i := range max(len(p), len(o)) {
-		var (
-			x PrereleaseIdentifier
-			y PrereleaseIdentifier
-		)
-
-		if i < len(p) {
-			x = p[i]
-		}
-
-		if i < len(o) {
-			y = o[i]
-		}
-
-		if d := comparePrereleaseIdentifiers(x, y); d != 0 {
-			return d
-		}
-	}
-
-	return 0
-}
-
-// Equal tells if the given Prerelease o is equal to p.
-func (p Prerelease) Equal(o Prerelease) bool {
-	return slices.EqualFunc(p, o, func(a, b PrereleaseIdentifier) bool {
-		return a.Equal(b)
-	})
-}
-
-// String returns the string representation of the Prerelease p.
+// String returns the string representation of p.
 func (p Prerelease) String() string {
 	if len(p) == 0 {
 		return ""
@@ -290,12 +252,7 @@ func (p Prerelease) String() string {
 	return sb.String()
 }
 
-// Equal tells if the given Build b is equal to o.
-func (b Build) Equal(o Build) bool {
-	return slices.Equal(b, o)
-}
-
-// String returns the string representation of the Build b.
+// String returns the string representation of b.
 func (b Build) String() string {
 	if len(b) == 0 {
 		return ""
@@ -314,105 +271,9 @@ func (b Build) String() string {
 	return sb.String()
 }
 
-// Compare returns
-//
-//	-1 if this identifier is less than o,
-//	 0 if this identifier equals o,
-//	+1 if this identifier is greater than o.
-//
-// The comparison is done according to the semantic versioning specification for
-// pre-release identifiers.
-func (i alphanumericIdentifier) Compare(o PrereleaseIdentifier) int {
-	// Alphanumeric identifiers always have higher precedence than numeric ones.
-	if o.IsNumeric() {
-		return 1
-	}
-
-	// Now both of the identifiers must be alphanumeric.
-	j, ok := o.(alphanumericIdentifier)
-	if !ok {
-		panic(fmt.Sprintf("compared identifier should be alphanumeric: %v", o))
-	}
-
-	return cmp.Compare(i.v, j.v)
-}
-
-// Equal tells if the given prereleaseIdentifier is equal to this one.
-func (i alphanumericIdentifier) Equal(o PrereleaseIdentifier) bool {
-	other, ok := o.(alphanumericIdentifier)
-	if !ok {
-		return false
-	}
-
-	return i.v == other.v
-}
-
-// IsAlphanumeric reports whether this PrereleaseIdentifier is alphanumeric.
-func (i alphanumericIdentifier) IsAlphanumeric() bool {
-	return true
-}
-
-// IsNumeric reports whether this PrereleaseIdentifier is numeric.
-func (i alphanumericIdentifier) IsNumeric() bool {
-	return false
-}
-
-// Len returns the length of the pre-release identifier in characters.
-func (i alphanumericIdentifier) Len() int {
-	return len(i.v)
-}
-
 // String returns the string representation of the identifier.
 func (i alphanumericIdentifier) String() string {
 	return i.v
-}
-
-// Compare returns
-//
-//	-1 if this identifier is less than o,
-//	 0 if this identifier equals o,
-//	+1 if this identifier is greater than o.
-//
-// The comparison is done according to the semantic versioning specification for
-// pre-release identifiers.
-func (i numericIdentifier) Compare(o PrereleaseIdentifier) int {
-	// Alphanumeric identifiers always have higher precedence than numeric ones.
-	if o.IsAlphanumeric() {
-		return -1
-	}
-
-	// Now both of the identifiers must be numeric.
-	j, ok := o.(numericIdentifier)
-	if !ok {
-		panic(fmt.Sprintf("compared identifier should be numeric: %v", o))
-	}
-
-	return cmp.Compare(i.v, j.v)
-}
-
-// Equal tells if the given prereleaseIdentifier is equal to this one.
-func (i numericIdentifier) Equal(o PrereleaseIdentifier) bool {
-	other, ok := o.(numericIdentifier)
-	if !ok {
-		return false
-	}
-
-	return i.v == other.v
-}
-
-// IsAlphanumeric reports whether this PrereleaseIdentifier is alphanumeric.
-func (i numericIdentifier) IsAlphanumeric() bool {
-	return false
-}
-
-// IsNumeric reports whether this PrereleaseIdentifier is numeric.
-func (i numericIdentifier) IsNumeric() bool {
-	return true
-}
-
-// Len returns the length of the pre-release identifier in characters.
-func (i numericIdentifier) Len() int {
-	return countDigits(i.v)
 }
 
 // String returns the string representation of the identifier.
@@ -571,7 +432,7 @@ func parse(s string, minCore int) (*Version, error) {
 }
 
 // newPrerelease creates new [Prerelease] from the given elements. The elements
-// must be strings or ints.
+// must be strings, ints, or uint64s.
 func newPrerelease(a ...any) (Prerelease, error) {
 	identifiers := make(Prerelease, 0, len(a))
 
@@ -656,6 +517,145 @@ func newBuild(s ...string) Build {
 	return b
 }
 
+// compare returns
+//
+//	-1 if p is less than o,
+//	 0 if p equals o,
+//	+1 if p is greater than o.
+//
+// The comparison is done according to the semantic versioning specification for
+// pre-release identifiers.
+func (p Prerelease) compare(o Prerelease) int {
+	for i := range max(len(p), len(o)) {
+		var (
+			x PrereleaseIdentifier
+			y PrereleaseIdentifier
+		)
+
+		if i < len(p) {
+			x = p[i]
+		}
+
+		if i < len(o) {
+			y = o[i]
+		}
+
+		if d := comparePrereleaseIdentifiers(x, y); d != 0 {
+			return d
+		}
+	}
+
+	return 0
+}
+
+// equal tells if p is equal to o.
+func (p Prerelease) equal(o Prerelease) bool {
+	return slices.EqualFunc(p, o, func(a, b PrereleaseIdentifier) bool {
+		return a.equal(b)
+	})
+}
+
+// equal tells if b is equal to a.
+func (b Build) equal(a Build) bool {
+	return slices.Equal(b, a)
+}
+
+// compare returns
+//
+//	-1 if this identifier is less than o,
+//	 0 if this identifier equals o,
+//	+1 if this identifier is greater than o.
+//
+// The comparison is done according to the semantic versioning specification for
+// pre-release identifiers.
+func (i alphanumericIdentifier) compare(o PrereleaseIdentifier) int {
+	// Alphanumeric identifiers always have higher precedence than numeric ones.
+	if o.isNumeric() {
+		return 1
+	}
+
+	// Now both of the identifiers must be alphanumeric.
+	j, ok := o.(alphanumericIdentifier)
+	if !ok {
+		panic(fmt.Sprintf("compared identifier should be alphanumeric: %v", o))
+	}
+
+	return cmp.Compare(i.v, j.v)
+}
+
+// equal tells if the given prereleaseIdentifier is equal to this one.
+func (i alphanumericIdentifier) equal(o PrereleaseIdentifier) bool {
+	other, ok := o.(alphanumericIdentifier)
+	if !ok {
+		return false
+	}
+
+	return i.v == other.v
+}
+
+// isAlphanumeric reports whether this PrereleaseIdentifier is alphanumeric.
+func (i alphanumericIdentifier) isAlphanumeric() bool {
+	return true
+}
+
+// isNumeric reports whether this PrereleaseIdentifier is numeric.
+func (i alphanumericIdentifier) isNumeric() bool {
+	return false
+}
+
+// len returns the length of the pre-release identifier in characters.
+func (i alphanumericIdentifier) len() int {
+	return len(i.v)
+}
+
+// compare returns
+//
+//	-1 if this identifier is less than o,
+//	 0 if this identifier equals o,
+//	+1 if this identifier is greater than o.
+//
+// The comparison is done according to the semantic versioning specification for
+// pre-release identifiers.
+func (i numericIdentifier) compare(o PrereleaseIdentifier) int {
+	// Alphanumeric identifiers always have higher precedence than numeric ones.
+	if o.isAlphanumeric() {
+		return -1
+	}
+
+	// Now both of the identifiers must be numeric.
+	j, ok := o.(numericIdentifier)
+	if !ok {
+		panic(fmt.Sprintf("compared identifier should be numeric: %v", o))
+	}
+
+	return cmp.Compare(i.v, j.v)
+}
+
+// equal tells if the given prereleaseIdentifier is equal to this one.
+func (i numericIdentifier) equal(o PrereleaseIdentifier) bool {
+	other, ok := o.(numericIdentifier)
+	if !ok {
+		return false
+	}
+
+	return i.v == other.v
+}
+
+// isAlphanumeric reports whether this PrereleaseIdentifier is alphanumeric.
+func (i numericIdentifier) isAlphanumeric() bool {
+	return false
+}
+
+// isNumeric reports whether this PrereleaseIdentifier is numeric.
+func (i numericIdentifier) isNumeric() bool {
+	return true
+}
+
+// len returns the length of the pre-release identifier in characters.
+func (i numericIdentifier) len() int {
+	return countDigits(i.v)
+}
+
 func comparePrereleaseIdentifiers(x, y PrereleaseIdentifier) int {
 	if x == y {
 		return 0
@@ -673,18 +673,18 @@ func comparePrereleaseIdentifiers(x, y PrereleaseIdentifier) int {
 		return 1
 	}
 
-	return x.Compare(y)
+	return x.compare(y)
 }
 
-func countDigits(i uint64) int {
-	if i == 0 {
+func countDigits(u uint64) int {
+	if u == 0 {
 		return 1
 	}
 
 	count := 0
 
-	for i != 0 {
-		i /= 10
+	for u != 0 {
+		u /= 10
 		count++
 	}
 
