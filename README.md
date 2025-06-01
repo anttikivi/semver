@@ -12,7 +12,7 @@ faster.
 
 ## Install
 
-    go get github.com/anttikivi/go-semver
+    go get github.com/anttikivi/semver
 
 ## Usage
 
