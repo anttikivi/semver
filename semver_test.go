@@ -805,13 +805,15 @@ func FuzzParse(f *testing.F) {
 	f.Add("1.2.3++")
 	f.Add("1.2.3+ ")
 	f.Add("1.2.3- ")
-	f.Add(strings.Repeat("1", 100) + "." + strings.Repeat("2", 100) + "." + strings.Repeat("3", 100))
+	f.Add(
+		strings.Repeat("1", 100) + "." + strings.Repeat("2", 100) + "." + strings.Repeat("3", 100),
+	)
 	f.Add("1.2.3-" + strings.Repeat("a", 200))
 	f.Add("1.2.3+" + strings.Repeat("b", 200))
 
 	f.Fuzz(func(t *testing.T, a string) {
 		v, err := semver.Parse(a)
-		if err == nil {
+		if err == nil { //nolint:nestif // must be complex
 			if v == nil {
 				t.Errorf("Parse(%q) returned nil error and a nil version", a)
 
@@ -819,19 +821,37 @@ func FuzzParse(f *testing.F) {
 			}
 
 			s := v.String()
+
 			v2, err2 := semver.Parse(s)
 			if err2 != nil {
-				t.Errorf("Parse(v.String()) failed for original %q (v.String() = %q): %v", a, s, err2)
+				t.Errorf(
+					"Parse(v.String()) failed for original %q (v.String() = %q): %v",
+					a,
+					s,
+					err2,
+				)
 
 				return
 			}
 
 			if !v.Equal(v2) {
-				t.Errorf("Parse(v.String()) resulted in non-equal version for %q.\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v", a, v, s, v2)
+				t.Errorf(
+					"Parse(v.String()) resulted in non-equal version for %q.\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					a,
+					v,
+					s,
+					v2,
+				)
 			}
 
 			if !v.StrictEqual(v2) {
-				t.Errorf("Parse(v.String()) resulted in non-strictly-equal version for %q.\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v", a, v, s, v2)
+				t.Errorf(
+					"Parse(v.String()) resulted in non-strictly-equal version for %q.\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					a,
+					v,
+					s,
+					v2,
+				)
 			}
 
 			if v.Compare(v2) != 0 {

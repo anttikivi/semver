@@ -76,7 +76,7 @@ func BenchmarkIsValidRegex(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
 	for range b.N {
-		_ = isValidRegex(test)
+		isValidRegex(test)
 	}
 }
 
@@ -86,7 +86,7 @@ func BenchmarkIsValidRegexShorter(b *testing.B) {
 	test := "1.2.11"
 
 	for range b.N {
-		_ = isValidRegex(test)
+		isValidRegex(test)
 	}
 }
 
@@ -128,6 +128,6 @@ func TestIsValidLax(t *testing.T) {
 	}
 }
 
-func isValidRegex(v string) bool {
-	return versionRegex.MatchString(v)
+func isValidRegex(v string) {
+	_ = versionRegex.MatchString(v)
 }
