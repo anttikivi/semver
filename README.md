@@ -1,8 +1,8 @@
 # Semantic Version Parser for Go
 
-[![CI](https://github.com/anttikivi/go-semver/actions/workflows/ci.yml/badge.svg)](https://github.com/anttikivi/go-semver/actions/workflows/ci.yml)
-[![Godoc](https://godoc.org/github.com/anttikivi/go-semver?status.svg)](https://godoc.org/github.com/anttikivi/go-semver)
-[![Go Report Card](https://goreportcard.com/badge/github.com/anttikivi/go-semver)](https://goreportcard.com/report/github.com/anttikivi/go-semver)
+[![CI](https://github.com/anttikivi/semver/actions/workflows/ci.yml/badge.svg)](https://github.com/anttikivi/semver/actions/workflows/ci.yml)
+[![Godoc](https://godoc.org/github.com/anttikivi/semver?status.svg)](https://godoc.org/github.com/anttikivi/semver)
+[![Go Report Card](https://goreportcard.com/badge/github.com/anttikivi/semver)](https://goreportcard.com/report/github.com/anttikivi/semver)
 
 The `semver` package provides utilities and a parser to work with version
 numbers that adhere to [semantic versioning](https://semver.org). The goal of
