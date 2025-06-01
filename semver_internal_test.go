@@ -1,6 +1,7 @@
 package semver
 
 import (
+	"errors"
 	"math"
 	"regexp"
 	"strconv"
@@ -826,7 +827,11 @@ func FuzzParse(f *testing.F) {
 	f.Add("1.2.3-" + strings.Repeat("a", 200))
 	f.Add("1.2.3+" + strings.Repeat("b", 200))
 
-	f.Fuzz(func(t *testing.T, a string) {
+	for _, tt := range baseTests {
+		f.Add(tt.v)
+	}
+
+	f.Fuzz(func(t *testing.T, a string) { //nolint:varnamelen // standard param name
 		v, err := Parse(a)
 		if err == nil { //nolint:nestif // must be complex
 			if v == nil {
@@ -851,7 +856,7 @@ func FuzzParse(f *testing.F) {
 
 			if !v.Equal(v2) {
 				t.Errorf(
-					"Parse(v.String()) resulted in non-equal version for %q.\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					"Parse(v.String()) resulted in non-equal version for %q\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
 					a,
 					v,
 					s,
@@ -861,7 +866,7 @@ func FuzzParse(f *testing.F) {
 
 			if !v.StrictEqual(v2) {
 				t.Errorf(
-					"Parse(v.String()) resulted in non-strictly-equal version for %q.\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
+					"Parse(v.String()) resulted in non-strictly-equal version for %q\nOriginal parsed: %+v\nv.String() = %q\nParse(v.String()) = %+v",
 					a,
 					v,
 					s,
@@ -872,6 +877,33 @@ func FuzzParse(f *testing.F) {
 			if v.Compare(v2) != 0 {
 				t.Errorf("v.Compare(%+v) != 0 for %q, parsed: %+v", v2, a, v)
 			}
+
+			b := a
+			if strings.HasPrefix(a, "v") {
+				b = a[1:]
+			}
+
+			if b != v.String() {
+				t.Errorf(
+					"Original input %q (canonical form %q) does not match v.String() %q. This may indicate an unintended canonicalization or parser behavior",
+					a,
+					b,
+					v.String(),
+				)
+			}
+
+			return
+		}
+
+		if err.Error() == "" {
+			t.Errorf("Parse(%q) returned an error but the error string was empty", a)
+		}
+
+		if errors.Is(err, ErrUnknown) {
+			t.Errorf(
+				"Parse(%q) returned a parser error which indicates an error within the parser",
+				a,
+			)
 		}
 	})
 }
