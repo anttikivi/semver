@@ -33,6 +33,17 @@ test:
 bench:
 	go test $(GOFLAGS) -bench=.
 
+
+.PHONY: fuzz
+fuzz:
+	@fuzztime="$(FUZZTIME)"; \
+	if [ -z "$${fuzztime}" ]; then \
+		fuzztime="15s"; \
+	fi; \
+	echo "Running fuzz tests for $${fuzztime}"; \
+	go test $(GOFLAGS) -fuzz="^FuzzParse$$" -fuzztime="$${fuzztime}"; \
+	go test $(GOFLAGS) -fuzz=FuzzParseLax -fuzztime="$${fuzztime}"
+
 # ============================================================================ #
 # DEVELOPMENT & BUILDING
 # ============================================================================ #
@@ -47,16 +58,6 @@ tidy: install-addlicense install-gci install-gofumpt install-golines
 
 .PHONY: fmt
 fmt: tidy
-
-.PHONY: fuzz
-fuzz:
-	@fuzztime="$(FUZZTIME)"; \
-	if [ -z "$${fuzztime}" ]; then \
-		fuzztime="15s"; \
-	fi; \
-	echo "Running fuzz tests for $${fuzztime}"; \
-	go test $(GOFLAGS) -fuzz="^FuzzParse$$" -fuzztime="$${fuzztime}"; \
-	go test $(GOFLAGS) -fuzz=FuzzParseLax -fuzztime="$${fuzztime}"
 
 # ============================================================================ #
 # TOOL HELPERS

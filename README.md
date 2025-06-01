@@ -120,6 +120,16 @@ If you think you have found a security vulnerability, please disclose it
 privately according to the
 [security policy](https://github.com/anttikivi/semver/security/policy).
 
+## Development
+
+The included [Makefile](Makefile) has the most common tasks you need to do in
+the project. Run `make audit` for the tests and linters. To only run the tests,
+use `make test`. `make lint` only runs the linters. Additionally, `make bench`
+runs the benchmarks and `make fuzz` runs the fuzz tests. To customize the test
+runs, you can pass in additional flags using the `GOFLAGS` variable. The code
+can be formatted using `make tidy`. The Makefile automatically installs all of
+the required tools.
+
 ## License
 
 Copyright (c) 2024 Antti Kivi
