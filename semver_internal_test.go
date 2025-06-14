@@ -783,7 +783,7 @@ func init() {
 func BenchmarkIsValidByParse(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
-	for range b.N {
+	for b.Loop() {
 		_ = isValidByParse(test)
 	}
 }
@@ -791,7 +791,7 @@ func BenchmarkIsValidByParse(b *testing.B) {
 func BenchmarkParse(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
-	for range b.N {
+	for b.Loop() {
 		_, _ = Parse(test)
 	}
 }
@@ -799,7 +799,7 @@ func BenchmarkParse(b *testing.B) {
 func BenchmarkParseLax(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
-	for range b.N {
+	for b.Loop() {
 		_, _ = ParseLax(test)
 	}
 }
@@ -808,7 +808,7 @@ func BenchmarkParseLax(b *testing.B) {
 func BenchmarkParseRegex(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
-	for range b.N {
+	for b.Loop() {
 		_ = parseRegex(test)
 	}
 }

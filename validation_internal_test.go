@@ -67,7 +67,7 @@ func init() {
 func BenchmarkIsValid(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
-	for range b.N {
+	for b.Loop() {
 		_ = IsValid(test)
 	}
 }
@@ -75,7 +75,7 @@ func BenchmarkIsValid(b *testing.B) {
 func BenchmarkIsValidShorter(b *testing.B) {
 	test := "1.2.11"
 
-	for range b.N {
+	for b.Loop() {
 		_ = IsValid(test)
 	}
 }
@@ -83,7 +83,7 @@ func BenchmarkIsValidShorter(b *testing.B) {
 func BenchmarkIsValidRegex(b *testing.B) {
 	test := "0.1.0-alpha.24+sha.19031c2.darwin.amd64"
 
-	for range b.N {
+	for b.Loop() {
 		isValidRegex(test)
 	}
 }
@@ -93,7 +93,7 @@ func BenchmarkIsValidRegex(b *testing.B) {
 func BenchmarkIsValidRegexShorter(b *testing.B) {
 	test := "1.2.11"
 
-	for range b.N {
+	for b.Loop() {
 		isValidRegex(test)
 	}
 }
