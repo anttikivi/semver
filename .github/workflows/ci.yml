@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Clone the source code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5.0.0
 
       - name: Set up the Go toolchain
         uses: actions/setup-go@v5.5.0
@@ -60,7 +60,7 @@ jobs:
 
     steps:
       - name: Clone the source code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5.0.0
 
       - name: Install the Go toolchain
         uses: actions/setup-go@v5.5.0
@@ -99,7 +99,7 @@ jobs:
 
     steps:
       - name: Clone the source code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5.0.0
 
       - name: Install the Go toolchain
         uses: actions/setup-go@v5.5.0
@@ -138,7 +138,7 @@ jobs:
 
     steps:
       - name: Clone the source code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5.0.0
 
       - name: Install the Go toolchain
         uses: actions/setup-go@v5.5.0
@@ -177,7 +177,7 @@ jobs:
 
     steps:
       - name: Clone the source code
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v5.0.0
 
       - name: Install the Go toolchain
         uses: actions/setup-go@v5.5.0
